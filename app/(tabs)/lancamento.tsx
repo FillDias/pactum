@@ -10,6 +10,7 @@ import {
   StatusBar,
 } from 'react-native'
 import { useFinancasStore } from '../../store/financasStore'
+import { useSaldoStore } from '../../store/saldoStore'
 import { CATEGORIAS, VENCIMENTOS } from '../../constants/categories'
 import { colors } from '../../constants/colors'
 
@@ -22,6 +23,7 @@ export default function Lancamento() {
 
   const { adicionarLancamento, carregando, mesSelecionado, anoSelecionado } =
     useFinancasStore()
+  const { buscarSaldo } = useSaldoStore()
 
   const handleSalvar = async () => {
     if (!descricao || !valor) {
@@ -40,11 +42,19 @@ export default function Lancamento() {
       ano: anoSelecionado,
       recorrente,
     })
+
+    const erroAtual = useFinancasStore.getState().erro
+    if (erroAtual) {
+      Alert.alert('Erro', erroAtual)
+      return
+    }
+
     setDescricao('')
     setValor('')
     setCategoria(CATEGORIAS[0].nome)
     setVencimento(5)
     setRecorrente(false)
+    buscarSaldo(mesSelecionado, anoSelecionado)
     Alert.alert('Sucesso', 'Lancamento adicionado!')
   }
 

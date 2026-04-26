@@ -98,3 +98,16 @@ export type Categoria = {
   icone: string
   cor: string
 }
+
+export type Cotacao = {
+  symbol: string
+  shortName: string
+  preco: number
+  variacao: number
+  variacaoPercent: number
+}
+
+export type InvestimentoComCotacao = Investimento & {
+  cotacao?: Cotacao
+  rendimentoReal?: number
+}

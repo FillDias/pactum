@@ -1,12 +1,12 @@
-// Layout raiz — verifica sessão e exibe loading durante inicialização
 import { useEffect, useState } from 'react'
 import { Stack, router, useSegments } from 'expo-router'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useAuthStore } from '../store/authStore'
 import Loading from '../components/ui/Loading'
 import '../global.css'
 
 export default function RootLayout() {
-  const { usuario, buscarPerfil, carregando } = useAuthStore()
+  const { usuario, buscarPerfil } = useAuthStore()
   const segments = useSegments()
   const [verificando, setVerificando] = useState(true)
 
@@ -27,9 +27,11 @@ export default function RootLayout() {
   if (verificando) return <Loading mensagem="Iniciando Pactum..." />
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-    </Stack>
+    <SafeAreaProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+    </SafeAreaProvider>
   )
 }
