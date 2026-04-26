@@ -1,4 +1,3 @@
-// Tela de chat — mensagens em tempo real entre os parceiros
 import { useEffect, useRef, useState } from 'react'
 import {
   View,
@@ -16,32 +15,27 @@ import * as chatService from '../../services/chatService'
 export default function Chat() {
   const [mensagem, setMensagem] = useState('')
   const flatListRef = useRef<FlatList>(null)
-  const { usuario, casal } = useAuthStore()
+  const { usuario } = useAuthStore()
   const { mensagens, buscarMensagens, enviarMensagem, adicionarMensagemLocal } =
     useChatStore()
 
   useEffect(() => {
-    if (!casal?.id) return
-    buscarMensagens(casal.id)
+    buscarMensagens()
 
-    // Assina mensagens em tempo real do cônjuge
-    const subscription = chatService.assinarMensagens(
-      casal.id,
-      (novaMensagem) => {
-        if (novaMensagem.usuario_id !== usuario?.id) {
-          adicionarMensagemLocal(novaMensagem)
-        }
+    const subscription = chatService.assinarMensagens((novaMensagem) => {
+      if (novaMensagem.user_id !== usuario?.id) {
+        adicionarMensagemLocal(novaMensagem)
       }
-    )
+    })
 
     return () => { subscription.unsubscribe() }
-  }, [casal])
+  }, [])
 
   const handleEnviar = async () => {
-    if (!mensagem.trim() || !casal?.id || !usuario?.id) return
+    if (!mensagem.trim()) return
     const texto = mensagem
     setMensagem('')
-    await enviarMensagem(casal.id, usuario.id, texto)
+    await enviarMensagem(texto)
     flatListRef.current?.scrollToEnd()
   }
 
@@ -55,7 +49,7 @@ export default function Chat() {
       <View className="bg-indigo-900 px-6 pt-14 pb-4">
         <Text className="text-white text-xl font-bold">Chat 💬</Text>
         <Text className="text-white opacity-70 text-sm">
-          Conversa do casal
+          Conversa da família
         </Text>
       </View>
 
@@ -67,7 +61,7 @@ export default function Chat() {
         contentContainerStyle={{ padding: 16, gap: 8 }}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
         renderItem={({ item }) => {
-          const minha = item.usuario_id === usuario?.id
+          const minha = item.user_id === usuario?.id
           const sistema = item.tipo === 'sistema'
 
           if (sistema) {

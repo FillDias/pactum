@@ -1,7 +1,5 @@
-// Tela de relatório — metas e projeção de saldo
 import { useEffect } from 'react'
 import { View, Text, ScrollView } from 'react-native'
-import { useAuthStore } from '../../store/authStore'
 import { useMetasStore } from '../../store/metasStore'
 import { formatarMoeda } from '../../utils/formatters'
 import { calcularProgressoMeta } from '../../utils/calculators'
@@ -9,12 +7,11 @@ import { calcularProgressoMeta } from '../../utils/calculators'
 const MESES_PROJECAO = ['Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
 export default function Relatorio() {
-  const { casal } = useAuthStore()
   const { metas, buscarMetas } = useMetasStore()
 
   useEffect(() => {
-    if (casal?.id) buscarMetas(casal.id)
-  }, [casal])
+    buscarMetas()
+  }, [])
 
   return (
     <ScrollView className="flex-1 bg-gray-50">
@@ -22,7 +19,7 @@ export default function Relatorio() {
       <View className="bg-indigo-900 px-6 pt-14 pb-6">
         <Text className="text-white text-xl font-bold">Relatório 📊</Text>
         <Text className="text-white opacity-70 text-sm">
-          Visão geral do casal
+          Visão geral da família
         </Text>
       </View>
 
@@ -56,7 +53,7 @@ export default function Relatorio() {
         {/* Metas */}
         <View className="bg-white rounded-2xl p-4">
           <Text className="text-gray-700 font-bold mb-3">
-            Metas do casal 🎯
+            Metas 🎯
           </Text>
 
           {metas.length === 0 ? (

@@ -1,131 +1,361 @@
-// Tela inicial — saldo familiar e lançamentos recentes
-import { useEffect } from 'react'
+import { useCallback } from 'react'
 import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
+  TouchableOpacity,
+  StatusBar,
 } from 'react-native'
+import { router, useFocusEffect } from 'expo-router'
 import { useAuthStore } from '../../store/authStore'
 import { useFinancasStore } from '../../store/financasStore'
+import { useSaldoStore } from '../../store/saldoStore'
+import { useInvestimentoStore } from '../../store/investimentoStore'
+import { useChatStore } from '../../store/chatStore'
 import { formatarMoeda, formatarMesAno } from '../../utils/formatters'
+import { colors } from '../../constants/colors'
 
 export default function Inicio() {
-  const { usuario, casal } = useAuthStore()
-  const {
-    lancamentos,
-    carregando,
-    mesSelecionado,
-    anoSelecionado,
-    saldoFamiliar,
-    saldoPorUsuario,
-    buscarLancamentos,
-  } = useFinancasStore()
+  const { usuario } = useAuthStore()
+  const { lancamentos, mesSelecionado, anoSelecionado, buscarLancamentos } =
+    useFinancasStore()
+  const { saldo, buscarSaldo } = useSaldoStore()
+  const { patrimonio_total, rendimento_mensal, buscarInvestimentos } =
+    useInvestimentoStore()
+  const { mensagens, buscarMensagens } = useChatStore()
 
-  useEffect(() => {
-    if (casal?.id) buscarLancamentos(casal.id)
-  }, [casal, mesSelecionado, anoSelecionado])
-
-  const saldo = saldoFamiliar()
-  const saldoPositivo = saldo >= 0
-  const saldoEu = saldoPorUsuario(usuario?.id ?? '')
-  const saldoConjuge = saldoPorUsuario(
-    usuario?.id === casal?.usuario1_id ? casal?.usuario2_id ?? '' : casal?.usuario1_id ?? ''
+  useFocusEffect(
+    useCallback(() => {
+      buscarLancamentos()
+      buscarSaldo(mesSelecionado, anoSelecionado)
+      buscarInvestimentos()
+      buscarMensagens()
+    }, [mesSelecionado, anoSelecionado])
   )
 
+  const saldoValor = saldo?.saldo ?? 0
+  const saldoPositivo = saldoValor >= 0
+  const saldoColor = saldoPositivo ? colors.status.positive : colors.status.negative
+
+  const atividadeRecente = mensagens
+    .filter(m => m.tipo === 'sistema')
+    .slice(-4)
+    .reverse()
+
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-indigo-900 px-6 pt-14 pb-6">
-        <Text className="text-white opacity-70 text-sm">
-          Olá, {usuario?.nome} 👋
-        </Text>
-        <Text className="text-white text-xl font-bold mt-1">
-          {formatarMesAno(mesSelecionado, anoSelecionado)}
-        </Text>
-      </View>
+    <View style={{ flex: 1, backgroundColor: colors.bg.primary }}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg.primary} />
+      <ScrollView showsVerticalScrollIndicator={false}>
 
-      {/* Card de saldo */}
-      <View className="mx-4 -mt-4 bg-white rounded-2xl p-5 shadow-sm">
-        <Text className="text-gray-500 text-sm mb-1">Saldo familiar</Text>
-        <Text
-          className={`text-3xl font-bold ${
-            saldoPositivo ? 'text-green-600' : 'text-red-500'
-          }`}
-        >
-          {formatarMoeda(saldo)}
-        </Text>
-
-        <View className="flex-row mt-4 gap-3">
-          <View className="flex-1 bg-blue-50 rounded-xl p-3">
-            <Text className="text-blue-900 text-xs mb-1">Você</Text>
-            <Text className="text-blue-900 font-bold">
-              {formatarMoeda(saldoEu)}
-            </Text>
-          </View>
-          <View className="flex-1 bg-purple-50 rounded-xl p-3">
-            <Text className="text-purple-900 text-xs mb-1">Cônjuge</Text>
-            <Text className="text-purple-900 font-bold">
-              {formatarMoeda(saldoConjuge)}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Alerta saldo negativo */}
-      {!saldoPositivo && (
-        <View className="mx-4 mt-3 bg-red-50 border-l-4 border-red-500 rounded-xl p-4">
-          <Text className="text-red-700 text-sm">
-            ⚠️ Saldo negativo este mês. Revise os lançamentos.
+        {/* Header */}
+        <View style={{
+          paddingHorizontal: 24,
+          paddingTop: 56,
+          paddingBottom: 28,
+          backgroundColor: colors.bg.primary,
+        }}>
+          <Text style={{
+            fontSize: 12,
+            color: colors.text.tertiary,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+          }}>
+            Ola, {usuario?.nome}
+          </Text>
+          <Text style={{
+            fontSize: 22,
+            fontWeight: '700',
+            color: colors.text.primary,
+            marginTop: 4,
+            letterSpacing: 0.3,
+          }}>
+            {formatarMesAno(mesSelecionado, anoSelecionado)}
           </Text>
         </View>
-      )}
 
-      {/* Lançamentos recentes */}
-      <View className="mx-4 mt-4">
-        <Text className="text-gray-700 font-bold mb-3">
-          Lançamentos recentes
-        </Text>
+        {/* Card saldo principal */}
+        <View style={{
+          marginHorizontal: 20,
+          backgroundColor: colors.bg.card,
+          borderRadius: 20,
+          padding: 24,
+          borderWidth: 1,
+          borderColor: colors.bg.border,
+        }}>
+          <Text style={{
+            fontSize: 11,
+            color: colors.text.tertiary,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            Saldo do mes
+          </Text>
+          <Text style={{
+            fontSize: 38,
+            fontWeight: '700',
+            color: saldoColor,
+            letterSpacing: -0.5,
+          }}>
+            {formatarMoeda(saldoValor)}
+          </Text>
 
-        {carregando ? (
-          <ActivityIndicator color="#1e1b4b" />
-        ) : lancamentos.length === 0 ? (
-          <View className="bg-white rounded-2xl p-6 items-center">
-            <Text className="text-gray-400 text-center">
-              Nenhum lançamento este mês.{'\n'}
-              Toque em ➕ para adicionar.
-            </Text>
-          </View>
-        ) : (
-          lancamentos.slice(0, 10).map((lancamento) => (
-            <View
-              key={lancamento.id}
-              className="bg-white rounded-xl p-4 mb-2 flex-row items-center"
-            >
-              <View className="flex-1">
-                <Text className="text-gray-800 font-medium">
-                  {lancamento.descricao}
-                </Text>
-                <Text className="text-gray-400 text-xs mt-1">
-                  {lancamento.categoria} · dia {lancamento.vencimento}
-                </Text>
-              </View>
-              <Text
-                className={`font-bold ${
-                  lancamento.tipo === 'receita'
-                    ? 'text-green-600'
-                    : 'text-red-500'
-                }`}
-              >
-                {lancamento.tipo === 'despesa' ? '-' : '+'}
-                {formatarMoeda(lancamento.valor)}
+          <View style={{ flexDirection: 'row', marginTop: 20, gap: 16 }}>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.bg.secondary,
+              borderRadius: 12,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: colors.bg.border,
+            }}>
+              <Text style={{
+                fontSize: 10,
+                color: colors.text.tertiary,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                marginBottom: 4,
+              }}>
+                Receitas
+              </Text>
+              <Text style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: colors.status.positive,
+              }}>
+                {formatarMoeda(saldo?.total_receitas ?? 0)}
               </Text>
             </View>
-          ))
-        )}
-      </View>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.bg.secondary,
+              borderRadius: 12,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: colors.bg.border,
+            }}>
+              <Text style={{
+                fontSize: 10,
+                color: colors.text.tertiary,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                marginBottom: 4,
+              }}>
+                Gastos
+              </Text>
+              <Text style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: colors.status.negative,
+              }}>
+                {formatarMoeda(saldo?.total_gastos ?? 0)}
+              </Text>
+            </View>
+          </View>
+        </View>
 
-      <View className="h-6" />
-    </ScrollView>
+        {/* Alerta saldo negativo */}
+        {!saldoPositivo && saldoValor !== 0 && (
+          <View style={{
+            marginHorizontal: 20,
+            marginTop: 12,
+            backgroundColor: '#2A1515',
+            borderRadius: 12,
+            padding: 14,
+            borderLeftWidth: 3,
+            borderLeftColor: colors.status.negative,
+          }}>
+            <Text style={{ color: colors.status.negative, fontSize: 13 }}>
+              Saldo negativo. Revise seus lancamentos.
+            </Text>
+          </View>
+        )}
+
+        {/* Card investimentos */}
+        {patrimonio_total > 0 && (
+          <TouchableOpacity
+            style={{
+              marginHorizontal: 20,
+              marginTop: 12,
+              backgroundColor: colors.bg.card,
+              borderRadius: 20,
+              padding: 20,
+              borderWidth: 1,
+              borderColor: colors.bg.border,
+            }}
+            onPress={() => router.push('/(tabs)/investimentos')}
+          >
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 12,
+            }}>
+              <Text style={{
+                fontSize: 11,
+                color: colors.text.tertiary,
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+              }}>
+                Investimentos
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.accent.main }}>
+                Ver tudo →
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 16 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{
+                  fontSize: 10,
+                  color: colors.text.tertiary,
+                  letterSpacing: 1,
+                  textTransform: 'uppercase',
+                  marginBottom: 4,
+                }}>
+                  Patrimonio
+                </Text>
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: '700',
+                  color: colors.accent.main,
+                }}>
+                  {formatarMoeda(patrimonio_total)}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{
+                  fontSize: 10,
+                  color: colors.text.tertiary,
+                  letterSpacing: 1,
+                  textTransform: 'uppercase',
+                  marginBottom: 4,
+                }}>
+                  Rendimento/mes
+                </Text>
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: '700',
+                  color: colors.status.positive,
+                }}>
+                  + {formatarMoeda(rendimento_mensal)}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {/* Atividade recente */}
+        {atividadeRecente.length > 0 && (
+          <View style={{ marginHorizontal: 20, marginTop: 24 }}>
+            <Text style={{
+              fontSize: 11,
+              color: colors.text.tertiary,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 12,
+            }}>
+              Atividade recente
+            </Text>
+            {atividadeRecente.map((msg) => (
+              <View
+                key={msg.id}
+                style={{
+                  backgroundColor: colors.bg.card,
+                  borderRadius: 12,
+                  padding: 14,
+                  marginBottom: 8,
+                  borderWidth: 1,
+                  borderColor: colors.bg.border,
+                }}
+              >
+                <Text style={{ color: colors.text.secondary, fontSize: 13 }}>
+                  {msg.conteudo}
+                </Text>
+                <Text style={{
+                  color: colors.text.tertiary,
+                  fontSize: 11,
+                  marginTop: 4,
+                }}>
+                  {new Date(msg.created_at).toLocaleDateString('pt-BR')}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Lancamentos recentes */}
+        <View style={{ marginHorizontal: 20, marginTop: 24 }}>
+          <Text style={{
+            fontSize: 11,
+            color: colors.text.tertiary,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+            marginBottom: 12,
+          }}>
+            Lancamentos recentes
+          </Text>
+          {lancamentos.length === 0 ? (
+            <View style={{
+              backgroundColor: colors.bg.card,
+              borderRadius: 16,
+              padding: 24,
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: colors.bg.border,
+            }}>
+              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>
+                Nenhum lancamento este mes.
+              </Text>
+            </View>
+          ) : (
+            lancamentos.slice(0, 8).map((lancamento) => (
+              <View
+                key={lancamento.id}
+                style={{
+                  backgroundColor: colors.bg.card,
+                  borderRadius: 14,
+                  padding: 16,
+                  marginBottom: 8,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: colors.bg.border,
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    color: colors.text.primary,
+                    fontSize: 14,
+                    fontWeight: '500',
+                  }}>
+                    {lancamento.descricao}
+                  </Text>
+                  <Text style={{
+                    color: colors.text.tertiary,
+                    fontSize: 12,
+                    marginTop: 3,
+                  }}>
+                    {lancamento.categoria}
+                    {lancamento.vencimento ? ` · dia ${lancamento.vencimento}` : ''}
+                  </Text>
+                </View>
+                <Text style={{
+                  fontWeight: '700',
+                  fontSize: 15,
+                  color: lancamento.tipo === 'receita'
+                    ? colors.status.positive
+                    : colors.status.negative,
+                }}>
+                  {lancamento.tipo === 'despesa' ? '-' : '+'}
+                  {formatarMoeda(lancamento.valor)}
+                </Text>
+              </View>
+            ))
+          )}
+        </View>
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </View>
   )
 }

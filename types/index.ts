@@ -1,31 +1,36 @@
-// Tipos globais do app Pactum
-// Define todas as entidades usadas nas camadas de store, service e tela
-
 export type Usuario = {
   id: string
   nome: string
   email: string
-  casal_id: string | null
+  familia_id: string | null
   avatar_url?: string
 }
 
-export type Casal = {
+export type FamiliaMembro = {
+  id: string
+  familia_id: string
+  user_id: string
+  papel: 'dono' | 'membro'
+  usuario?: Usuario
+}
+
+export type Familia = {
   id: string
   nome: string
-  usuario1_id: string
-  usuario2_id: string
+  criador_id: string
+  membros: FamiliaMembro[]
   created_at: string
 }
 
 export type Lancamento = {
   id: string
-  casal_id: string
-  usuario_id: string
+  user_id: string
+  familia_id: string | null
   descricao: string
   valor: number
   tipo: 'despesa' | 'receita'
   categoria: string
-  vencimento: number  // dia do mês: 5, 20 ou 30
+  vencimento: number
   mes: number
   ano: number
   recorrente: boolean
@@ -34,16 +39,52 @@ export type Lancamento = {
 
 export type Mensagem = {
   id: string
-  casal_id: string
-  usuario_id: string
+  user_id: string
+  familia_id: string | null
   conteudo: string
   tipo: 'texto' | 'sistema'
   created_at: string
 }
 
+export type Receita = {
+  id: string
+  user_id: string
+  familia_id: string | null
+  descricao: string
+  valor: number
+  tipo: 'salario' | 'freela' | 'bonus' | 'investimento' | 'outro'
+  recorrente: boolean
+  mes: number
+  ano: number
+  created_at: string
+}
+
+export type Investimento = {
+  id: string
+  user_id: string
+  nome: string
+  tipo: string
+  valor_investido: number
+  quantidade: number | null
+  rentabilidade_tipo: 'cdi' | 'selic' | 'prefixado' | 'variavel' | null
+  rentabilidade_percentual: number | null
+  data_inicio: string
+  vencimento: string | null
+  rendimento_mensal_estimado: number
+  created_at: string
+}
+
+export type Saldo = {
+  saldo: number
+  total_receitas: number
+  total_gastos: number
+  positivo?: boolean
+  mes?: number
+  ano?: number
+}
+
 export type Meta = {
   id: string
-  casal_id: string
   titulo: string
   valor_alvo: number
   valor_atual: number

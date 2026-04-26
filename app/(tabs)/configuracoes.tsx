@@ -1,4 +1,3 @@
-// Tela de configurações — perfil, casal e logout
 import { useState } from 'react'
 import {
   View,
@@ -8,139 +7,366 @@ import {
   Modal,
   TextInput,
   ActivityIndicator,
+  StatusBar,
+  ScrollView,
 } from 'react-native'
+import { Feather } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuthStore } from '../../store/authStore'
+import { colors } from '../../constants/colors'
+
+function MenuItem({
+  icon,
+  label,
+  onPress,
+  destructive = false,
+}: {
+  icon: React.ComponentProps<typeof Feather>['name']
+  label: string
+  onPress: () => void
+  destructive?: boolean
+}) {
+  return (
+    <TouchableOpacity
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 18,
+        gap: 14,
+        backgroundColor: colors.bg.card,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: colors.bg.border,
+      }}
+      onPress={onPress}
+    >
+      <Feather
+        name={icon}
+        size={18}
+        color={destructive ? colors.status.negative : colors.text.secondary}
+      />
+      <Text style={{
+        flex: 1,
+        color: destructive ? colors.status.negative : colors.text.primary,
+        fontSize: 15,
+        fontWeight: '500',
+      }}>
+        {label}
+      </Text>
+      {!destructive && (
+        <Feather name="chevron-right" size={16} color={colors.text.tertiary} />
+      )}
+    </TouchableOpacity>
+  )
+}
 
 export default function Configuracoes() {
-  const { usuario, casal, logout, vincularConjuge, carregando, erro } =
+  const { usuario, familia, logout, convidarMembro, carregando, erro } =
     useAuthStore()
   const [modalVisivel, setModalVisivel] = useState(false)
-  const [emailConjuge, setEmailConjuge] = useState('')
+  const [emailMembro, setEmailMembro] = useState('')
+  const insets = useSafeAreaInsets()
 
-  const handleVincular = async () => {
-    if (!emailConjuge) {
-      Alert.alert('Atenção', 'Digite o email do cônjuge')
+  const handleConvidar = async () => {
+    if (!emailMembro) {
+      Alert.alert('Atencao', 'Digite o email do membro')
       return
     }
-    await vincularConjuge(emailConjuge)
+    await convidarMembro(emailMembro)
     if (!erro) {
       setModalVisivel(false)
-      setEmailConjuge('')
-      Alert.alert('✅ Sucesso', 'Casal vinculado com sucesso!')
+      setEmailMembro('')
+      Alert.alert('Sucesso', 'Convite enviado!')
     }
   }
 
   const handleLogout = () => {
-    Alert.alert(
-      'Sair',
-      'Deseja realmente sair?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Sair', style: 'destructive', onPress: logout },
-      ]
-    )
+    Alert.alert('Sair', 'Deseja realmente sair?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Sair', style: 'destructive', onPress: logout },
+    ])
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-indigo-900 px-6 pt-14 pb-6">
-        <Text className="text-white text-xl font-bold">
-          Configurações ⚙️
-        </Text>
-      </View>
+    <View style={{
+      flex: 1,
+      backgroundColor: colors.bg.primary,
+      paddingTop: insets.top || 48,
+    }}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg.primary} />
+      <ScrollView showsVerticalScrollIndicator={false}>
 
-      <View className="mx-4 mt-4 gap-3">
-        {/* Perfil */}
-        <View className="bg-white rounded-2xl p-4">
-          <Text className="text-gray-500 text-xs mb-1">Logado como</Text>
-          <Text className="text-gray-800 font-bold">{usuario?.nome}</Text>
-          <Text className="text-gray-400 text-sm">{usuario?.email}</Text>
+        {/* Header */}
+        <View style={{ paddingHorizontal: 24, paddingBottom: 28 }}>
+          <Text style={{
+            fontSize: 11,
+            color: colors.text.tertiary,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+          }}>
+            Conta
+          </Text>
+          <Text style={{
+            fontSize: 26,
+            fontWeight: '700',
+            color: colors.text.primary,
+            marginTop: 4,
+            letterSpacing: -0.3,
+          }}>
+            Configuracoes
+          </Text>
         </View>
 
-        {/* Casal */}
-        <View className="bg-white rounded-2xl p-4">
-          <Text className="text-gray-500 text-xs mb-2">Casal</Text>
-          {casal ? (
-            <View>
-              <Text className="text-green-600 font-medium">
-                ✅ Casal vinculado ao Pactum
-              </Text>
-              <Text className="text-gray-400 text-xs mt-1">
-                ID: {casal.id.slice(0, 8)}...
+        <View style={{ paddingHorizontal: 20, gap: 12 }}>
+
+          {/* Avatar e perfil */}
+          <View style={{
+            backgroundColor: colors.bg.card,
+            borderRadius: 16,
+            padding: 20,
+            borderWidth: 1,
+            borderColor: colors.bg.border,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 16,
+          }}>
+            <View style={{
+              width: 52,
+              height: 52,
+              borderRadius: 26,
+              backgroundColor: colors.accent.main,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Text style={{
+                color: colors.text.inverse,
+                fontSize: 22,
+                fontWeight: '700',
+              }}>
+                {usuario?.nome?.charAt(0).toUpperCase()}
               </Text>
             </View>
-          ) : (
-            <TouchableOpacity
-              className="bg-indigo-900 rounded-xl py-3 items-center"
-              onPress={() => setModalVisivel(true)}
-            >
-              <Text className="text-white font-bold">
-                Vincular cônjuge
+            <View style={{ flex: 1 }}>
+              <Text style={{
+                color: colors.text.primary,
+                fontSize: 16,
+                fontWeight: '600',
+              }}>
+                {usuario?.nome}
               </Text>
-            </TouchableOpacity>
-          )}
+              <Text style={{
+                color: colors.text.secondary,
+                fontSize: 13,
+                marginTop: 2,
+              }}>
+                {usuario?.email}
+              </Text>
+            </View>
+          </View>
+
+          {/* Familia */}
+          <View style={{
+            backgroundColor: colors.bg.card,
+            borderRadius: 16,
+            padding: 18,
+            borderWidth: 1,
+            borderColor: colors.bg.border,
+          }}>
+            <Text style={{
+              fontSize: 11,
+              color: colors.text.tertiary,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 14,
+            }}>
+              Familia
+            </Text>
+
+            {familia ? (
+              <View style={{ gap: 10 }}>
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                }}>
+                  <Feather
+                    name="users"
+                    size={16}
+                    color={colors.status.positive}
+                  />
+                  <Text style={{
+                    color: colors.text.primary,
+                    fontSize: 15,
+                    fontWeight: '500',
+                  }}>
+                    {familia.nome}
+                  </Text>
+                </View>
+                <Text style={{
+                  color: colors.text.secondary,
+                  fontSize: 13,
+                }}>
+                  {familia.membros?.length ?? 0} membro(s) vinculado(s)
+                </Text>
+                <TouchableOpacity
+                  style={{
+                    marginTop: 6,
+                    paddingVertical: 12,
+                    borderRadius: 10,
+                    alignItems: 'center',
+                    backgroundColor: colors.bg.input,
+                    borderWidth: 1,
+                    borderColor: colors.bg.border,
+                  }}
+                  onPress={() => setModalVisivel(true)}
+                >
+                  <Text style={{
+                    color: colors.accent.main,
+                    fontWeight: '600',
+                    fontSize: 14,
+                  }}>
+                    Convidar membro
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={{
+                  paddingVertical: 12,
+                  borderRadius: 10,
+                  alignItems: 'center',
+                  backgroundColor: colors.bg.input,
+                  borderWidth: 1,
+                  borderColor: colors.bg.border,
+                }}
+                onPress={() => setModalVisivel(true)}
+              >
+                <Text style={{
+                  color: colors.accent.main,
+                  fontWeight: '600',
+                  fontSize: 14,
+                }}>
+                  Criar familia
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Logout */}
+          <MenuItem
+            icon="log-out"
+            label="Sair da conta"
+            onPress={handleLogout}
+            destructive
+          />
+
+          <View style={{ height: 32 }} />
         </View>
+      </ScrollView>
 
-        {/* Logout */}
-        <TouchableOpacity
-          className="bg-red-50 rounded-2xl p-4 items-center"
-          onPress={handleLogout}
-        >
-          <Text className="text-red-500 font-bold">Sair da conta</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal vincular cônjuge */}
+      {/* Modal convidar */}
       <Modal
         visible={modalVisivel}
         transparent
         animationType="slide"
         onRequestClose={() => setModalVisivel(false)}
       >
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-white rounded-t-3xl p-6">
-            <Text className="text-gray-800 text-lg font-bold mb-1">
-              Vincular cônjuge
+        <View style={{
+          flex: 1,
+          justifyContent: 'flex-end',
+          backgroundColor: 'rgba(0,0,0,0.75)',
+        }}>
+          <View style={{
+            backgroundColor: colors.bg.secondary,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            padding: 24,
+            paddingBottom: 24 + insets.bottom,
+            borderTopWidth: 1,
+            borderColor: colors.bg.border,
+          }}>
+            <Text style={{
+              color: colors.text.primary,
+              fontSize: 18,
+              fontWeight: '700',
+              marginBottom: 6,
+            }}>
+              {familia ? 'Convidar membro' : 'Criar familia'}
             </Text>
-            <Text className="text-gray-400 text-sm mb-6">
-              Digite o email cadastrado do seu cônjuge
+            <Text style={{
+              color: colors.text.secondary,
+              fontSize: 13,
+              marginBottom: 20,
+            }}>
+              Digite o email do membro para convidar
             </Text>
 
             <TextInput
-              className="border border-gray-200 rounded-xl px-4 py-3 mb-3 text-base"
+              style={{
+                backgroundColor: colors.bg.input,
+                borderWidth: 1,
+                borderColor: colors.bg.border,
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 15,
+                color: colors.text.primary,
+                marginBottom: 12,
+              }}
               placeholder="email@exemplo.com"
+              placeholderTextColor={colors.text.tertiary}
               keyboardType="email-address"
               autoCapitalize="none"
-              value={emailConjuge}
-              onChangeText={setEmailConjuge}
+              value={emailMembro}
+              onChangeText={setEmailMembro}
               autoFocus
             />
 
             {erro && (
-              <Text className="text-red-500 text-sm mb-3">{erro}</Text>
+              <Text style={{
+                color: colors.status.negative,
+                fontSize: 13,
+                marginBottom: 12,
+              }}>
+                {erro}
+              </Text>
             )}
 
             <TouchableOpacity
-              className="bg-indigo-900 rounded-xl py-4 items-center mb-3"
-              onPress={handleVincular}
+              style={{
+                backgroundColor: colors.accent.main,
+                borderRadius: 12,
+                paddingVertical: 16,
+                alignItems: 'center',
+                marginBottom: 12,
+              }}
+              onPress={handleConvidar}
               disabled={carregando}
             >
               {carregando ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.text.inverse} />
               ) : (
-                <Text className="text-white font-bold">Vincular</Text>
+                <Text style={{
+                  color: colors.text.inverse,
+                  fontWeight: '700',
+                  fontSize: 15,
+                }}>
+                  Convidar
+                </Text>
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="py-3 items-center"
+              style={{ paddingVertical: 12, alignItems: 'center' }}
               onPress={() => {
                 setModalVisivel(false)
-                setEmailConjuge('')
+                setEmailMembro('')
               }}
             >
-              <Text className="text-gray-400">Cancelar</Text>
+              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>
+                Cancelar
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

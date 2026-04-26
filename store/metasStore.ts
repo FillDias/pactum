@@ -1,4 +1,3 @@
-// Store de metas — gerencia metas financeiras do casal
 import { create } from 'zustand'
 import { Meta } from '../types'
 import * as metasService from '../services/metasService'
@@ -10,7 +9,7 @@ type MetasState = {
   erro: string | null
 
   progressoDaMeta: (meta: Meta) => number
-  buscarMetas: (casalId: string) => Promise<void>
+  buscarMetas: () => Promise<void>
   adicionarMeta: (meta: Omit<Meta, 'id' | 'created_at'>) => Promise<void>
   atualizarProgressoMeta: (id: string, valorAtual: number) => Promise<void>
   removerMeta: (id: string) => Promise<void>
@@ -25,10 +24,10 @@ export const useMetasStore = create<MetasState>((set, get) => ({
   progressoDaMeta: (meta) =>
     calcularProgressoMeta(meta.valor_atual, meta.valor_alvo),
 
-  buscarMetas: async (casalId) => {
+  buscarMetas: async () => {
     set({ carregando: true, erro: null })
     try {
-      const metas = await metasService.buscarMetas(casalId)
+      const metas = await metasService.buscarMetas()
       set({ metas, carregando: false })
     } catch (error: any) {
       set({ erro: error.message, carregando: false })

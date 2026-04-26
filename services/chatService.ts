@@ -1,59 +1,29 @@
-// Serviço de chat — mensagens em tempo real via Supabase Realtime
-import { supabase } from '../config/supabase'
+import api from '../config/api'
 import { Mensagem } from '../types'
 
-// Busca mensagens do casal ordenadas cronologicamente
-export const buscarMensagens = async (
-  casalId: string
-): Promise<Mensagem[]> => {
-  const { data, error } = await supabase
-    .from('mensagens')
-    .select('*')
-    .eq('casal_id', casalId)
-    .order('created_at', { ascending: true })
-    .limit(100)
+const mapMensagem = (m: any): Mensagem => ({ ...m })
 
-  if (error) throw new Error(error.message)
-  return data
+export const buscarMensagens = async (): Promise<Mensagem[]> => {
+  const data = await api.get('/mensagens')
+  return data.mensagens.map(mapMensagem)
 }
 
-// Envia nova mensagem de texto
-export const enviarMensagem = async (
-  casalId: string,
-  usuarioId: string,
-  conteudo: string
-): Promise<Mensagem> => {
-  const { data, error } = await supabase
-    .from('mensagens')
-    .insert({
-      casal_id: casalId,
-      usuario_id: usuarioId,
-      conteudo,
-      tipo: 'texto',
-    })
-    .select()
-    .single()
-
-  if (error) throw new Error(error.message)
-  return data
+export const enviarMensagem = async (conteudo: string): Promise<Mensagem> => {
+  const data = await api.post('/mensagens', { conteudo })
+  return mapMensagem(data.mensagem)
 }
 
-// Assina mensagens em tempo real — retorna o canal para ser cancelado no unmount
 export const assinarMensagens = (
-  casalId: string,
   onNovaMensagem: (mensagem: Mensagem) => void
 ) => {
-  return supabase
-    .channel(`mensagens:${casalId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'mensagens',
-        filter: `casal_id=eq.${casalId}`,
-      },
-      (payload) => onNovaMensagem(payload.new as Mensagem)
-    )
-    .subscribe()
+  const interval = setInterval(async () => {
+    try {
+      const data = await api.get('/mensagens')
+      if (data.mensagens?.length) {
+        onNovaMensagem(mapMensagem(data.mensagens[data.mensagens.length - 1]))
+      }
+    } catch {}
+  }, 3000)
+
+  return { unsubscribe: () => clearInterval(interval) }
 }

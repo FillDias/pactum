@@ -1,11 +1,10 @@
-// Store de autenticação — gerencia sessão, perfil e vínculo do casal
 import { create } from 'zustand'
-import { Usuario, Casal } from '../types'
+import { Usuario, Familia } from '../types'
 import * as authService from '../services/authService'
 
 type AuthState = {
   usuario: Usuario | null
-  casal: Casal | null
+  familia: Familia | null
   carregando: boolean
   erro: string | null
 
@@ -13,13 +12,13 @@ type AuthState = {
   register: (nome: string, email: string, senha: string) => Promise<void>
   logout: () => Promise<void>
   buscarPerfil: () => Promise<void>
-  vincularConjuge: (email: string) => Promise<void>
+  convidarMembro: (email: string) => Promise<void>
   limparErro: () => void
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   usuario: null,
-  casal: null,
+  familia: null,
   carregando: false,
   erro: null,
 
@@ -47,7 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ carregando: true })
     try {
       await authService.logout()
-      set({ usuario: null, casal: null, carregando: false })
+      set({ usuario: null, familia: null, carregando: false })
     } catch (error: any) {
       set({ erro: error.message, carregando: false })
     }
@@ -56,20 +55,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   buscarPerfil: async () => {
     set({ carregando: true })
     try {
-      const { usuario, casal } = await authService.buscarPerfil()
-      set({ usuario, casal, carregando: false })
-    } catch (error: any) {
-      // "Usuário não autenticado" é estado normal (app abrindo sem sessão), não um erro
-      const semSessao = error.message === 'Usuário não autenticado'
-      set({ erro: semSessao ? null : error.message, carregando: false })
+      const { usuario, familia } = await authService.buscarPerfil()
+      set({ usuario, familia, carregando: false })
+    } catch {
+      set({ carregando: false })
     }
   },
 
-  vincularConjuge: async (email) => {
+  convidarMembro: async (email) => {
+    const { familia } = get()
+    if (!familia) throw new Error('Sem família ativa')
     set({ carregando: true, erro: null })
     try {
-      const casal = await authService.vincularConjuge(email)
-      set({ casal, carregando: false })
+      await authService.convidarMembro(email, familia.id)
+      set({ carregando: false })
     } catch (error: any) {
       set({ erro: error.message, carregando: false })
     }

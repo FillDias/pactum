@@ -1,4 +1,3 @@
-// Tela de lançamentos — formulário de receitas e despesas
 import { useState } from 'react'
 import {
   View,
@@ -8,213 +7,332 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native'
-import { useAuthStore } from '../../store/authStore'
 import { useFinancasStore } from '../../store/financasStore'
 import { CATEGORIAS, VENCIMENTOS } from '../../constants/categories'
+import { colors } from '../../constants/colors'
 
 export default function Lancamento() {
   const [descricao, setDescricao] = useState('')
   const [valor, setValor] = useState('')
-  const [tipo, setTipo] = useState<'despesa' | 'receita'>('despesa')
   const [categoria, setCategoria] = useState(CATEGORIAS[0].nome)
   const [vencimento, setVencimento] = useState(5)
   const [recorrente, setRecorrente] = useState(false)
 
-  const { usuario, casal } = useAuthStore()
   const { adicionarLancamento, carregando, mesSelecionado, anoSelecionado } =
     useFinancasStore()
 
   const handleSalvar = async () => {
     if (!descricao || !valor) {
-      Alert.alert('Atenção', 'Preencha descrição e valor')
+      Alert.alert('Atencao', 'Preencha descricao e valor')
       return
     }
-    if (!casal?.id || !usuario?.id) {
-      Alert.alert('Atenção', 'Você precisa estar vinculado a um casal')
-      return
-    }
-
     await adicionarLancamento({
-      casal_id: casal.id,
-      usuario_id: usuario.id,
+      user_id: '',
+      familia_id: null,
       descricao,
       valor: parseFloat(valor.replace(',', '.')),
-      tipo,
+      tipo: 'despesa',
       categoria,
       vencimento,
       mes: mesSelecionado,
       ano: anoSelecionado,
       recorrente,
     })
-
     setDescricao('')
     setValor('')
-    setTipo('despesa')
     setCategoria(CATEGORIAS[0].nome)
     setVencimento(5)
     setRecorrente(false)
+    Alert.alert('Sucesso', 'Lancamento adicionado!')
+  }
 
-    Alert.alert('✅ Sucesso', 'Lançamento adicionado!')
+  const inputStyle = {
+    backgroundColor: colors.bg.input,
+    borderWidth: 1,
+    borderColor: colors.bg.border,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: colors.text.primary,
+    marginBottom: 12,
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-indigo-900 px-6 pt-14 pb-6">
-        <Text className="text-white text-xl font-bold">
-          Novo lançamento ➕
-        </Text>
-      </View>
+    <View style={{ flex: 1, backgroundColor: colors.bg.primary }}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg.primary} />
+      <ScrollView showsVerticalScrollIndicator={false}>
 
-      <View className="mx-4 mt-4 gap-4">
-        {/* Tipo */}
-        <View className="bg-white rounded-2xl p-4">
-          <Text className="text-gray-500 text-sm mb-3">Tipo</Text>
-          <View className="flex-row gap-3">
-            <TouchableOpacity
-              className={`flex-1 py-3 rounded-xl items-center ${
-                tipo === 'despesa' ? 'bg-red-500' : 'bg-gray-100'
-              }`}
-              onPress={() => setTipo('despesa')}
-            >
-              <Text
-                className={
-                  tipo === 'despesa' ? 'text-white font-bold' : 'text-gray-500'
-                }
-              >
-                💸 Despesa
+        {/* Header */}
+        <View style={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 24 }}>
+          <Text style={{
+            fontSize: 11,
+            color: colors.text.tertiary,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+          }}>
+            Novo
+          </Text>
+          <Text style={{
+            fontSize: 22,
+            fontWeight: '700',
+            color: colors.text.primary,
+            marginTop: 4,
+          }}>
+            Lancamento
+          </Text>
+        </View>
+
+        <View style={{ paddingHorizontal: 20, gap: 16 }}>
+
+          {/* Tipo */}
+          <View style={{
+            backgroundColor: colors.bg.card,
+            borderRadius: 16,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: colors.bg.border,
+          }}>
+            <Text style={{
+              fontSize: 11,
+              color: colors.text.tertiary,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}>
+              Tipo
+            </Text>
+            <View style={{
+              backgroundColor: colors.status.negative + '22',
+              borderRadius: 10,
+              paddingVertical: 12,
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: colors.status.negative + '44',
+            }}>
+              <Text style={{
+                color: colors.status.negative,
+                fontWeight: '600',
+                fontSize: 14,
+              }}>
+                Despesa
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className={`flex-1 py-3 rounded-xl items-center ${
-                tipo === 'receita' ? 'bg-green-500' : 'bg-gray-100'
-              }`}
-              onPress={() => setTipo('receita')}
-            >
-              <Text
-                className={
-                  tipo === 'receita' ? 'text-white font-bold' : 'text-gray-500'
-                }
-              >
-                💰 Receita
-              </Text>
-            </TouchableOpacity>
+            </View>
           </View>
-        </View>
 
-        {/* Descrição e valor */}
-        <View className="bg-white rounded-2xl p-4 gap-3">
-          <TextInput
-            className="border border-gray-200 rounded-xl px-4 py-3 text-base"
-            placeholder="Descrição ex: Gasolina"
-            value={descricao}
-            onChangeText={setDescricao}
-          />
-          <TextInput
-            className="border border-gray-200 rounded-xl px-4 py-3 text-base"
-            placeholder="Valor ex: 830,00"
-            keyboardType="decimal-pad"
-            value={valor}
-            onChangeText={setValor}
-          />
-        </View>
+          {/* Detalhes */}
+          <View style={{
+            backgroundColor: colors.bg.card,
+            borderRadius: 16,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: colors.bg.border,
+          }}>
+            <Text style={{
+              fontSize: 11,
+              color: colors.text.tertiary,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 12,
+            }}>
+              Detalhes
+            </Text>
+            <TextInput
+              style={inputStyle}
+              placeholder="Descricao"
+              placeholderTextColor={colors.text.tertiary}
+              value={descricao}
+              onChangeText={setDescricao}
+            />
+            <TextInput
+              style={{ ...inputStyle, marginBottom: 0 }}
+              placeholder="Valor ex: 830,00"
+              placeholderTextColor={colors.text.tertiary}
+              keyboardType="decimal-pad"
+              value={valor}
+              onChangeText={setValor}
+            />
+          </View>
 
-        {/* Categoria */}
-        <View className="bg-white rounded-2xl p-4">
-          <Text className="text-gray-500 text-sm mb-3">Categoria</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row gap-2">
-              {CATEGORIAS.map((cat) => (
-                <TouchableOpacity
-                  key={cat.id}
-                  className={`px-4 py-2 rounded-full border ${
-                    categoria === cat.nome
-                      ? 'bg-indigo-900 border-indigo-900'
-                      : 'bg-white border-gray-200'
-                  }`}
-                  onPress={() => setCategoria(cat.nome)}
-                >
-                  <Text
-                    className={
-                      categoria === cat.nome ? 'text-white' : 'text-gray-600'
-                    }
+          {/* Categoria */}
+          <View style={{
+            backgroundColor: colors.bg.card,
+            borderRadius: 16,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: colors.bg.border,
+          }}>
+            <Text style={{
+              fontSize: 11,
+              color: colors.text.tertiary,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 12,
+            }}>
+              Categoria
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {CATEGORIAS.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={{
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      borderRadius: 20,
+                      backgroundColor: categoria === cat.nome
+                        ? colors.accent.main
+                        : colors.bg.input,
+                      borderWidth: 1,
+                      borderColor: categoria === cat.nome
+                        ? colors.accent.main
+                        : colors.bg.border,
+                    }}
+                    onPress={() => setCategoria(cat.nome)}
                   >
-                    {cat.icone} {cat.nome}
+                    <Text style={{
+                      color: categoria === cat.nome
+                        ? colors.text.inverse
+                        : colors.text.secondary,
+                      fontSize: 13,
+                      fontWeight: '500',
+                    }}>
+                      {cat.icone} {cat.nome}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+
+          {/* Vencimento */}
+          <View style={{
+            backgroundColor: colors.bg.card,
+            borderRadius: 16,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: colors.bg.border,
+          }}>
+            <Text style={{
+              fontSize: 11,
+              color: colors.text.tertiary,
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              marginBottom: 12,
+            }}>
+              Vencimento
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {VENCIMENTOS.map((dia) => (
+                <TouchableOpacity
+                  key={dia}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    borderRadius: 10,
+                    alignItems: 'center',
+                    backgroundColor: vencimento === dia
+                      ? colors.accent.main
+                      : colors.bg.input,
+                    borderWidth: 1,
+                    borderColor: vencimento === dia
+                      ? colors.accent.main
+                      : colors.bg.border,
+                  }}
+                  onPress={() => setVencimento(dia)}
+                >
+                  <Text style={{
+                    color: vencimento === dia
+                      ? colors.text.inverse
+                      : colors.text.secondary,
+                    fontWeight: '600',
+                    fontSize: 13,
+                  }}>
+                    Dia {dia}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
-          </ScrollView>
-        </View>
-
-        {/* Vencimento */}
-        <View className="bg-white rounded-2xl p-4">
-          <Text className="text-gray-500 text-sm mb-3">
-            Dia de vencimento
-          </Text>
-          <View className="flex-row gap-3">
-            {VENCIMENTOS.map((dia) => (
-              <TouchableOpacity
-                key={dia}
-                className={`flex-1 py-3 rounded-xl items-center ${
-                  vencimento === dia ? 'bg-indigo-900' : 'bg-gray-100'
-                }`}
-                onPress={() => setVencimento(dia)}
-              >
-                <Text
-                  className={
-                    vencimento === dia
-                      ? 'text-white font-bold'
-                      : 'text-gray-500'
-                  }
-                >
-                  Dia {dia}
-                </Text>
-              </TouchableOpacity>
-            ))}
           </View>
-        </View>
 
-        {/* Recorrente */}
-        <TouchableOpacity
-          className="bg-white rounded-2xl p-4 flex-row items-center justify-between"
-          onPress={() => setRecorrente(!recorrente)}
-        >
-          <View>
-            <Text className="text-gray-800 font-medium">
-              Lançamento recorrente
-            </Text>
-            <Text className="text-gray-400 text-sm">Repete todo mês</Text>
-          </View>
-          <View
-            className={`w-12 h-6 rounded-full ${
-              recorrente ? 'bg-indigo-900' : 'bg-gray-200'
-            }`}
+          {/* Recorrente */}
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.bg.card,
+              borderRadius: 16,
+              padding: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderWidth: 1,
+              borderColor: colors.bg.border,
+            }}
+            onPress={() => setRecorrente(!recorrente)}
           >
-            <View
-              className={`w-6 h-6 rounded-full bg-white shadow-sm ${
-                recorrente ? 'translate-x-6' : 'translate-x-0'
-              }`}
-            />
-          </View>
-        </TouchableOpacity>
+            <View>
+              <Text style={{
+                color: colors.text.primary,
+                fontSize: 14,
+                fontWeight: '500',
+              }}>
+                Recorrente
+              </Text>
+              <Text style={{
+                color: colors.text.tertiary,
+                fontSize: 12,
+                marginTop: 2,
+              }}>
+                Repete todo mes
+              </Text>
+            </View>
+            <View style={{
+              width: 44,
+              height: 24,
+              borderRadius: 12,
+              backgroundColor: recorrente ? colors.accent.main : colors.bg.border,
+              justifyContent: 'center',
+              paddingHorizontal: 3,
+            }}>
+              <View style={{
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: '#fff',
+                alignSelf: recorrente ? 'flex-end' : 'flex-start',
+              }} />
+            </View>
+          </TouchableOpacity>
 
-        {/* Botão salvar */}
-        <TouchableOpacity
-          className="bg-indigo-900 rounded-2xl py-4 items-center mb-6"
-          onPress={handleSalvar}
-          disabled={carregando}
-        >
-          {carregando ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-white font-bold text-base">
-              Salvar lançamento
-            </Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          {/* Botao salvar */}
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.accent.main,
+              borderRadius: 14,
+              paddingVertical: 16,
+              alignItems: 'center',
+              marginBottom: 32,
+            }}
+            onPress={handleSalvar}
+            disabled={carregando}
+          >
+            {carregando ? (
+              <ActivityIndicator color={colors.text.inverse} />
+            ) : (
+              <Text style={{
+                color: colors.text.inverse,
+                fontWeight: '700',
+                fontSize: 15,
+                letterSpacing: 0.5,
+              }}>
+                Salvar lancamento
+              </Text>
+            )}
+          </TouchableOpacity>
+
+        </View>
+      </ScrollView>
+    </View>
   )
 }

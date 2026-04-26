@@ -1,70 +1,34 @@
-// Serviço de lançamentos — CRUD de receitas e despesas via Supabase
-import { supabase } from '../config/supabase'
+import api from '../config/api'
 import { Lancamento } from '../types'
 
-// Busca lançamentos do casal por mês e ano
+const mapLancamento = (l: any): Lancamento => ({
+  ...l,
+  valor: parseFloat(l.valor),
+})
+
 export const buscarLancamentos = async (
-  casalId: string,
   mes: number,
   ano: number
 ): Promise<Lancamento[]> => {
-  const { data, error } = await supabase
-    .from('lancamentos')
-    .select('*')
-    .eq('casal_id', casalId)
-    .eq('mes', mes)
-    .eq('ano', ano)
-    .order('created_at', { ascending: false })
-
-  if (error) throw new Error(error.message)
-  return data
+  const data = await api.get(`/lancamentos?mes=${mes}&ano=${ano}`)
+  return data.lancamentos.map(mapLancamento)
 }
 
-// Adiciona novo lançamento e envia mensagem automática no chat
 export const adicionarLancamento = async (
   lancamento: Omit<Lancamento, 'id' | 'created_at'>
 ): Promise<Lancamento> => {
-  const { data, error } = await supabase
-    .from('lancamentos')
-    .insert(lancamento)
-    .select()
-    .single()
-
-  if (error) throw new Error(error.message)
-
-  // Mensagem automática no chat informando o lançamento ao casal
-  await supabase.from('mensagens').insert({
-    casal_id: lancamento.casal_id,
-    usuario_id: lancamento.usuario_id,
-    conteudo: `lançou ${lancamento.tipo === 'despesa' ? '💸' : '💰'} ${lancamento.descricao} de R$ ${lancamento.valor.toFixed(2).replace('.', ',')}`,
-    tipo: 'sistema',
-  })
-
-  return data
+  const data = await api.post('/lancamentos', lancamento)
+  return mapLancamento(data.lancamento)
 }
 
-// Edita um lançamento existente
 export const editarLancamento = async (
   id: string,
   dados: Partial<Lancamento>
 ): Promise<Lancamento> => {
-  const { data, error } = await supabase
-    .from('lancamentos')
-    .update(dados)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) throw new Error(error.message)
-  return data
+  const data = await api.patch(`/lancamentos/${id}`, dados)
+  return mapLancamento(data.lancamento)
 }
 
-// Remove um lançamento
 export const removerLancamento = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from('lancamentos')
-    .delete()
-    .eq('id', id)
-
-  if (error) throw new Error(error.message)
+  await api.delete(`/lancamentos/${id}`)
 }

@@ -1,4 +1,3 @@
-// Tela de cadastro — criação de conta
 import { useState } from 'react'
 import {
   View,
@@ -6,10 +5,14 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  StatusBar,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from 'react-native'
 import { router } from 'expo-router'
 import { useAuthStore } from '../../store/authStore'
+import { colors } from '../../constants/colors'
 
 export default function Register() {
   const [nome, setNome] = useState('')
@@ -18,79 +21,139 @@ export default function Register() {
   const { register, carregando, erro, limparErro } = useAuthStore()
 
   const handleRegister = async () => {
-    if (!nome || !email || !senha) {
-      Alert.alert('Atenção', 'Preencha todos os campos')
-      return
-    }
-    if (senha.length < 6) {
-      Alert.alert('Atenção', 'Senha deve ter no mínimo 6 caracteres')
-      return
-    }
+    if (!nome || !email || !senha) return
+    if (senha.length < 6) return
     await register(nome, email, senha)
     if (!erro) router.replace('/(tabs)')
   }
 
   return (
-    <View className="flex-1 bg-white justify-center px-6">
-      <Text className="text-3xl font-bold text-center text-indigo-900 mb-2">
-        Pactum
-      </Text>
-      <Text className="text-center text-gray-500 mb-10">
-        crie sua conta
-      </Text>
-
-      <TextInput
-        className="border border-gray-200 rounded-xl px-4 py-3 mb-3 text-base"
-        placeholder="Seu nome"
-        value={nome}
-        onChangeText={setNome}
-      />
-
-      <TextInput
-        className="border border-gray-200 rounded-xl px-4 py-3 mb-3 text-base"
-        placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <TextInput
-        className="border border-gray-200 rounded-xl px-4 py-3 mb-6 text-base"
-        placeholder="Senha (mínimo 6 caracteres)"
-        secureTextEntry
-        value={senha}
-        onChangeText={setSenha}
-      />
-
-      {erro && (
-        <Text className="text-red-500 text-center mb-4">{erro}</Text>
-      )}
-
-      <TouchableOpacity
-        className="bg-indigo-900 rounded-xl py-4 items-center mb-4"
-        onPress={handleRegister}
-        disabled={carregando}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: colors.bg.primary }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg.primary} />
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
       >
-        {carregando ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text className="text-white font-bold text-base">
-            Criar conta
-          </Text>
-        )}
-      </TouchableOpacity>
+        <View style={{ flex: 1, paddingHorizontal: 28, justifyContent: 'center' }}>
+          <View style={{ marginBottom: 40 }}>
+            <Text style={{
+              fontSize: 36,
+              fontWeight: '700',
+              color: colors.accent.main,
+              letterSpacing: 2,
+            }}>
+              PACTUM
+            </Text>
+            <Text style={{
+              fontSize: 14,
+              color: colors.text.secondary,
+              marginTop: 6,
+            }}>
+              Crie sua conta
+            </Text>
+          </View>
 
-      <TouchableOpacity
-        onPress={() => {
-          limparErro()
-          router.back()
-        }}
-      >
-        <Text className="text-center text-indigo-900">
-          Já tem conta? Entrar
-        </Text>
-      </TouchableOpacity>
-    </View>
+          <View style={{ gap: 12 }}>
+            <TextInput
+              style={{
+                backgroundColor: colors.bg.input,
+                borderWidth: 1,
+                borderColor: colors.bg.border,
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 15,
+                color: colors.text.primary,
+              }}
+              placeholder="Seu nome"
+              placeholderTextColor={colors.text.tertiary}
+              value={nome}
+              onChangeText={(t) => { setNome(t); limparErro() }}
+            />
+
+            <TextInput
+              style={{
+                backgroundColor: colors.bg.input,
+                borderWidth: 1,
+                borderColor: colors.bg.border,
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 15,
+                color: colors.text.primary,
+              }}
+              placeholder="Email"
+              placeholderTextColor={colors.text.tertiary}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={(t) => { setEmail(t); limparErro() }}
+            />
+
+            <TextInput
+              style={{
+                backgroundColor: colors.bg.input,
+                borderWidth: 1,
+                borderColor: colors.bg.border,
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 15,
+                color: colors.text.primary,
+              }}
+              placeholder="Senha (minimo 6 caracteres)"
+              placeholderTextColor={colors.text.tertiary}
+              secureTextEntry
+              value={senha}
+              onChangeText={(t) => { setSenha(t); limparErro() }}
+            />
+
+            {erro && (
+              <Text style={{ color: colors.status.negative, fontSize: 13 }}>
+                {erro}
+              </Text>
+            )}
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.accent.main,
+                borderRadius: 12,
+                paddingVertical: 16,
+                alignItems: 'center',
+                marginTop: 8,
+              }}
+              onPress={handleRegister}
+              disabled={carregando}
+            >
+              {carregando ? (
+                <ActivityIndicator color={colors.text.inverse} />
+              ) : (
+                <Text style={{
+                  color: colors.text.inverse,
+                  fontWeight: '700',
+                  fontSize: 15,
+                  letterSpacing: 0.5,
+                }}>
+                  Criar conta
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{ paddingVertical: 12, alignItems: 'center' }}
+              onPress={() => { limparErro(); router.back() }}
+            >
+              <Text style={{ color: colors.text.secondary, fontSize: 14 }}>
+                Ja tem conta?{' '}
+                <Text style={{ color: colors.accent.main }}>Entrar</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }

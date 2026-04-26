@@ -1,4 +1,3 @@
-// Store de finanças — gerencia lançamentos e saldo do casal
 import { create } from 'zustand'
 import { Lancamento } from '../types'
 import * as lancamentosService from '../services/lancamentosService'
@@ -16,7 +15,7 @@ type FinancasState = {
   saldoPorUsuario: (usuarioId: string) => number
   lancamentosPorUsuario: (usuarioId: string) => Lancamento[]
 
-  buscarLancamentos: (casalId: string) => Promise<void>
+  buscarLancamentos: () => Promise<void>
   adicionarLancamento: (lancamento: Omit<Lancamento, 'id' | 'created_at'>) => Promise<void>
   editarLancamento: (id: string, dados: Partial<Lancamento>) => Promise<void>
   removerLancamento: (id: string) => Promise<void>
@@ -39,12 +38,11 @@ export const useFinancasStore = create<FinancasState>((set, get) => ({
   lancamentosPorUsuario: (usuarioId) =>
     filtrarPorUsuario(get().lancamentos, usuarioId),
 
-  buscarLancamentos: async (casalId) => {
+  buscarLancamentos: async () => {
     set({ carregando: true, erro: null })
     try {
       const { mesSelecionado, anoSelecionado } = get()
       const lancamentos = await lancamentosService.buscarLancamentos(
-        casalId,
         mesSelecionado,
         anoSelecionado
       )

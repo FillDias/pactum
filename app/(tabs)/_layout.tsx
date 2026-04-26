@@ -1,55 +1,83 @@
-// Layout das abas principais do Pactum
 import { Tabs } from 'expo-router'
-import { Text } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Feather } from '@expo/vector-icons'
+import { colors } from '../../constants/colors'
+
+function TabIcon({
+  name,
+  focused,
+}: {
+  name: React.ComponentProps<typeof Feather>['name']
+  focused: boolean
+}) {
+  return (
+    <Feather
+      name={name}
+      size={22}
+      color={focused ? colors.accent.main : colors.text.tertiary}
+    />
+  )
+}
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets()
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopColor: '#f0f0f0',
-          height: 60,
-          paddingBottom: 8,
+          backgroundColor: colors.bg.secondary,
+          borderTopColor: colors.bg.border,
+          borderTopWidth: 1,
+          height: 56 + insets.bottom,
+          paddingBottom: insets.bottom,
+          paddingTop: 8,
         },
-        tabBarActiveTintColor: '#1e1b4b',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: colors.accent.main,
+        tabBarInactiveTintColor: colors.text.tertiary,
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '500',
+          letterSpacing: 0.2,
+          marginTop: 2,
+        },
+        tabBarShowLabel: true,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Início',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 20 }}>🏠</Text>
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 20 }}>💬</Text>
+          title: 'Inicio',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="home" focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
         name="lancamento"
         options={{
-          title: 'Lançar',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 20 }}>➕</Text>
+          title: 'Gastos',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="arrow-down-circle" focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
-        name="relatorio"
+        name="receitas"
         options={{
-          title: 'Relatório',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 20 }}>📊</Text>
+          title: 'Receitas',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="arrow-up-circle" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="investimentos"
+        options={{
+          title: 'Invest.',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="trending-up" focused={focused} />
           ),
         }}
       />
@@ -57,11 +85,14 @@ export default function TabsLayout() {
         name="configuracoes"
         options={{
           title: 'Config',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 20 }}>⚙️</Text>
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="settings" focused={focused} />
           ),
         }}
       />
+      <Tabs.Screen name="chat" options={{ href: null }} />
+      <Tabs.Screen name="relatorio" options={{ href: null }} />
+      <Tabs.Screen name="two" options={{ href: null }} />
     </Tabs>
   )
 }

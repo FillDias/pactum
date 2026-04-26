@@ -13,7 +13,7 @@ export const filtrarPorUsuario = (
   lancamentos: Lancamento[],
   usuarioId: string
 ): Lancamento[] => {
-  return lancamentos.filter(l => l.usuario_id === usuarioId)
+  return lancamentos.filter(l => l.user_id === usuarioId)
 }
 
 // Calcula o progresso de uma meta em porcentagem (0–100)
