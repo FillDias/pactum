@@ -9,20 +9,26 @@ import {
   ActivityIndicator,
   StatusBar,
   ScrollView,
+  Platform,
 } from 'react-native'
+import { useResponsive } from '../../hooks/useResponsive'
 import { Feather } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuthStore } from '../../store/authStore'
 import { colors } from '../../constants/colors'
 
+type ModalModo = 'criar_familia' | 'convidar' | null
+
 function MenuItem({
   icon,
   label,
+  sublabel,
   onPress,
   destructive = false,
 }: {
   icon: React.ComponentProps<typeof Feather>['name']
   label: string
+  sublabel?: string
   onPress: () => void
   destructive?: boolean
 }) {
@@ -46,14 +52,20 @@ function MenuItem({
         size={18}
         color={destructive ? colors.status.negative : colors.text.secondary}
       />
-      <Text style={{
-        flex: 1,
-        color: destructive ? colors.status.negative : colors.text.primary,
-        fontSize: 15,
-        fontWeight: '500',
-      }}>
-        {label}
-      </Text>
+      <View style={{ flex: 1 }}>
+        <Text style={{
+          color: destructive ? colors.status.negative : colors.text.primary,
+          fontSize: 15,
+          fontWeight: '500',
+        }}>
+          {label}
+        </Text>
+        {sublabel ? (
+          <Text style={{ color: colors.text.tertiary, fontSize: 12, marginTop: 1 }}>
+            {sublabel}
+          </Text>
+        ) : null}
+      </View>
       {!destructive && (
         <Feather name="chevron-right" size={16} color={colors.text.tertiary} />
       )}
@@ -62,21 +74,45 @@ function MenuItem({
 }
 
 export default function Configuracoes() {
-  const { usuario, familia, logout, convidarMembro, carregando, erro } =
+  const { isDesktop } = useResponsive()
+  const { usuario, familia, logout, criarFamilia, convidarMembro, carregando, erro, limparErro } =
     useAuthStore()
-  const [modalVisivel, setModalVisivel] = useState(false)
+  const [modalModo, setModalModo] = useState<ModalModo>(null)
+  const [nomeFamilia, setNomeFamilia] = useState('')
   const [emailMembro, setEmailMembro] = useState('')
   const insets = useSafeAreaInsets()
 
+  const abrirModal = (modo: ModalModo) => {
+    limparErro()
+    setModalModo(modo)
+  }
+
+  const fecharModal = () => {
+    setModalModo(null)
+    setNomeFamilia('')
+    setEmailMembro('')
+  }
+
+  const handleCriarFamilia = async () => {
+    if (!nomeFamilia.trim()) {
+      Alert.alert('Atencao', 'Digite o nome da familia')
+      return
+    }
+    await criarFamilia(nomeFamilia.trim())
+    if (!useAuthStore.getState().erro) {
+      fecharModal()
+      Alert.alert('Sucesso', 'Familia criada!')
+    }
+  }
+
   const handleConvidar = async () => {
-    if (!emailMembro) {
+    if (!emailMembro.trim()) {
       Alert.alert('Atencao', 'Digite o email do membro')
       return
     }
-    await convidarMembro(emailMembro)
-    if (!erro) {
-      setModalVisivel(false)
-      setEmailMembro('')
+    await convidarMembro(emailMembro.trim())
+    if (!useAuthStore.getState().erro) {
+      fecharModal()
       Alert.alert('Sucesso', 'Convite enviado!')
     }
   }
@@ -88,195 +124,202 @@ export default function Configuracoes() {
     ])
   }
 
+  const sectionLabel = {
+    fontSize: 10,
+    color: colors.text.tertiary,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase' as const,
+    marginBottom: 10,
+  }
+
   return (
     <View style={{
       flex: 1,
       backgroundColor: colors.bg.primary,
-      paddingTop: insets.top || 48,
+      paddingTop: Platform.OS === 'web' ? 24 : (insets.top || 48),
     }}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg.primary} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.bg.primary} />
       <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={isDesktop ? { alignSelf: 'center', width: '100%', maxWidth: 500 } : undefined}>
 
-        {/* Header */}
-        <View style={{ paddingHorizontal: 24, paddingBottom: 28 }}>
-          <Text style={{
-            fontSize: 11,
-            color: colors.text.tertiary,
-            letterSpacing: 1.5,
-            textTransform: 'uppercase',
-          }}>
-            Conta
-          </Text>
-          <Text style={{
-            fontSize: 26,
-            fontWeight: '700',
-            color: colors.text.primary,
-            marginTop: 4,
-            letterSpacing: -0.3,
-          }}>
-            Configuracoes
-          </Text>
-        </View>
-
-        <View style={{ paddingHorizontal: 20, gap: 12 }}>
-
-          {/* Avatar e perfil */}
-          <View style={{
-            backgroundColor: colors.bg.card,
-            borderRadius: 16,
-            padding: 20,
-            borderWidth: 1,
-            borderColor: colors.bg.border,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 16,
-          }}>
-            <View style={{
-              width: 52,
-              height: 52,
-              borderRadius: 26,
-              backgroundColor: colors.accent.main,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <Text style={{
-                color: colors.text.inverse,
-                fontSize: 22,
-                fontWeight: '700',
-              }}>
-                {usuario?.nome?.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{
-                color: colors.text.primary,
-                fontSize: 16,
-                fontWeight: '600',
-              }}>
-                {usuario?.nome}
-              </Text>
-              <Text style={{
-                color: colors.text.secondary,
-                fontSize: 13,
-                marginTop: 2,
-              }}>
-                {usuario?.email}
-              </Text>
-            </View>
+          {/* Header */}
+          <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
+            <Text style={{ fontSize: 10, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+              Conta
+            </Text>
+            <Text style={{ fontSize: 26, fontWeight: '700', color: colors.text.primary, marginTop: 4 }}>
+              Configuracoes
+            </Text>
           </View>
 
-          {/* Familia */}
-          <View style={{
-            backgroundColor: colors.bg.card,
-            borderRadius: 16,
-            padding: 18,
-            borderWidth: 1,
-            borderColor: colors.bg.border,
-          }}>
-            <Text style={{
-              fontSize: 11,
-              color: colors.text.tertiary,
-              letterSpacing: 1.5,
-              textTransform: 'uppercase',
-              marginBottom: 14,
-            }}>
-              Familia
-            </Text>
+          <View style={{ paddingHorizontal: 20, gap: 12 }}>
 
-            {familia ? (
-              <View style={{ gap: 10 }}>
-                <View style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 10,
-                }}>
-                  <Feather
-                    name="users"
-                    size={16}
-                    color={colors.status.positive}
-                  />
-                  <Text style={{
-                    color: colors.text.primary,
-                    fontSize: 15,
-                    fontWeight: '500',
-                  }}>
-                    {familia.nome}
-                  </Text>
-                </View>
-                <Text style={{
-                  color: colors.text.secondary,
-                  fontSize: 13,
-                }}>
-                  {familia.membros?.length ?? 0} membro(s) vinculado(s)
+            {/* Perfil */}
+            <View style={{
+              backgroundColor: colors.bg.card,
+              borderRadius: 16,
+              padding: 20,
+              borderWidth: 1,
+              borderColor: colors.bg.border,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 16,
+            }}>
+              <View style={{
+                width: 52,
+                height: 52,
+                borderRadius: 26,
+                backgroundColor: colors.accent.main,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700' }}>
+                  {usuario?.nome?.charAt(0).toUpperCase()}
                 </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: colors.text.primary, fontSize: 16, fontWeight: '600' }}>
+                  {usuario?.nome}
+                </Text>
+                <Text style={{ color: colors.text.secondary, fontSize: 13, marginTop: 2 }}>
+                  {usuario?.email}
+                </Text>
+              </View>
+            </View>
+
+            {/* Familia */}
+            <View style={{
+              backgroundColor: colors.bg.card,
+              borderRadius: 16,
+              padding: 18,
+              borderWidth: 1,
+              borderColor: colors.bg.border,
+            }}>
+              <Text style={sectionLabel}>Familia</Text>
+
+              {familia ? (
+                <View style={{ gap: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Feather name="users" size={16} color={colors.status.positive} />
+                    <Text style={{ color: colors.text.primary, fontSize: 15, fontWeight: '600' }}>
+                      {familia.nome}
+                    </Text>
+                  </View>
+
+                  {/* Lista de membros */}
+                  {familia.membros && familia.membros.length > 0 && (
+                    <View style={{ gap: 8 }}>
+                      {familia.membros.map(m => (
+                        <View key={m.id} style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 10,
+                          backgroundColor: colors.bg.secondary,
+                          borderRadius: 10,
+                          padding: 10,
+                        }}>
+                          <View style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 16,
+                            backgroundColor: m.papel === 'dono' ? colors.accent.main : colors.bg.border,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>
+                              {(m.usuario?.nome ?? m.user_id).charAt(0).toUpperCase()}
+                            </Text>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: colors.text.primary, fontSize: 13, fontWeight: '500' }}>
+                              {m.usuario?.nome ?? 'Membro'}
+                            </Text>
+                            <Text style={{ color: colors.text.tertiary, fontSize: 11 }}>
+                              {m.usuario?.email ?? ''}
+                            </Text>
+                          </View>
+                          {m.papel === 'dono' && (
+                            <View style={{
+                              backgroundColor: colors.accent.main + '33',
+                              borderRadius: 4,
+                              paddingHorizontal: 6,
+                              paddingVertical: 2,
+                            }}>
+                              <Text style={{ color: colors.accent.dark, fontSize: 10, fontWeight: '700' }}>
+                                DONO
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  <TouchableOpacity
+                    style={{
+                      paddingVertical: 12,
+                      borderRadius: 10,
+                      alignItems: 'center',
+                      backgroundColor: colors.bg.input,
+                      borderWidth: 1,
+                      borderColor: colors.bg.border,
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      gap: 8,
+                    }}
+                    onPress={() => abrirModal('convidar')}
+                  >
+                    <Feather name="user-plus" size={14} color={colors.accent.dark} />
+                    <Text style={{ color: colors.accent.dark, fontWeight: '600', fontSize: 14 }}>
+                      Convidar membro
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
                 <TouchableOpacity
                   style={{
-                    marginTop: 6,
-                    paddingVertical: 12,
+                    paddingVertical: 14,
                     borderRadius: 10,
                     alignItems: 'center',
-                    backgroundColor: colors.bg.input,
+                    backgroundColor: colors.accent.main + '22',
                     borderWidth: 1,
-                    borderColor: colors.bg.border,
+                    borderColor: colors.accent.main + '55',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 8,
                   }}
-                  onPress={() => setModalVisivel(true)}
+                  onPress={() => abrirModal('criar_familia')}
                 >
-                  <Text style={{
-                    color: colors.accent.main,
-                    fontWeight: '600',
-                    fontSize: 14,
-                  }}>
-                    Convidar membro
+                  <Feather name="users" size={14} color={colors.accent.dark} />
+                  <Text style={{ color: colors.accent.dark, fontWeight: '600', fontSize: 14 }}>
+                    Criar familia
                   </Text>
                 </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity
-                style={{
-                  paddingVertical: 12,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                  backgroundColor: colors.bg.input,
-                  borderWidth: 1,
-                  borderColor: colors.bg.border,
-                }}
-                onPress={() => setModalVisivel(true)}
-              >
-                <Text style={{
-                  color: colors.accent.main,
-                  fontWeight: '600',
-                  fontSize: 14,
-                }}>
-                  Criar familia
-                </Text>
-              </TouchableOpacity>
-            )}
+              )}
+            </View>
+
+            {/* Acoes */}
+            <MenuItem
+              icon="log-out"
+              label="Sair da conta"
+              sublabel={usuario?.email ?? ''}
+              onPress={handleLogout}
+              destructive
+            />
+
+            <View style={{ height: 32 }} />
           </View>
-
-          {/* Logout */}
-          <MenuItem
-            icon="log-out"
-            label="Sair da conta"
-            onPress={handleLogout}
-            destructive
-          />
-
-          <View style={{ height: 32 }} />
         </View>
       </ScrollView>
 
-      {/* Modal convidar */}
+      {/* Modal */}
       <Modal
-        visible={modalVisivel}
+        visible={modalModo !== null}
         transparent
         animationType="slide"
-        onRequestClose={() => setModalVisivel(false)}
+        onRequestClose={fecharModal}
       >
-        <View style={{
-          flex: 1,
-          justifyContent: 'flex-end',
-          backgroundColor: 'rgba(0,0,0,0.75)',
-        }}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.75)' }}>
           <View style={{
             backgroundColor: colors.bg.secondary,
             borderTopLeftRadius: 24,
@@ -286,52 +329,62 @@ export default function Configuracoes() {
             borderTopWidth: 1,
             borderColor: colors.bg.border,
           }}>
-            <Text style={{
-              color: colors.text.primary,
-              fontSize: 18,
-              fontWeight: '700',
-              marginBottom: 6,
-            }}>
-              {familia ? 'Convidar membro' : 'Criar familia'}
+            <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 6 }}>
+              {modalModo === 'criar_familia' ? 'Criar familia' : 'Convidar membro'}
             </Text>
-            <Text style={{
-              color: colors.text.secondary,
-              fontSize: 13,
-              marginBottom: 20,
-            }}>
-              Digite o email do membro para convidar
+            <Text style={{ color: colors.text.secondary, fontSize: 13, marginBottom: 20 }}>
+              {modalModo === 'criar_familia'
+                ? 'Escolha um nome para sua familia'
+                : 'Digite o email do membro para convidar'}
             </Text>
 
-            <TextInput
-              style={{
-                backgroundColor: colors.bg.input,
-                borderWidth: 1,
-                borderColor: colors.bg.border,
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                fontSize: 15,
-                color: colors.text.primary,
-                marginBottom: 12,
-              }}
-              placeholder="email@exemplo.com"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={emailMembro}
-              onChangeText={setEmailMembro}
-              autoFocus
-            />
+            {modalModo === 'criar_familia' ? (
+              <TextInput
+                style={{
+                  backgroundColor: colors.bg.input,
+                  borderWidth: 1,
+                  borderColor: colors.bg.border,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  fontSize: 15,
+                  color: colors.text.primary,
+                  marginBottom: 12,
+                }}
+                placeholder="Nome da familia ex: Familia Silva"
+                placeholderTextColor={colors.text.tertiary}
+                value={nomeFamilia}
+                onChangeText={setNomeFamilia}
+                autoFocus
+              />
+            ) : (
+              <TextInput
+                style={{
+                  backgroundColor: colors.bg.input,
+                  borderWidth: 1,
+                  borderColor: colors.bg.border,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  fontSize: 15,
+                  color: colors.text.primary,
+                  marginBottom: 12,
+                }}
+                placeholder="email@exemplo.com"
+                placeholderTextColor={colors.text.tertiary}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={emailMembro}
+                onChangeText={setEmailMembro}
+                autoFocus
+              />
+            )}
 
-            {erro && (
-              <Text style={{
-                color: colors.status.negative,
-                fontSize: 13,
-                marginBottom: 12,
-              }}>
+            {erro ? (
+              <Text style={{ color: colors.status.negative, fontSize: 13, marginBottom: 12 }}>
                 {erro}
               </Text>
-            )}
+            ) : null}
 
             <TouchableOpacity
               style={{
@@ -341,32 +394,23 @@ export default function Configuracoes() {
                 alignItems: 'center',
                 marginBottom: 12,
               }}
-              onPress={handleConvidar}
+              onPress={modalModo === 'criar_familia' ? handleCriarFamilia : handleConvidar}
               disabled={carregando}
             >
               {carregando ? (
-                <ActivityIndicator color={colors.text.inverse} />
+                <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={{
-                  color: colors.text.inverse,
-                  fontWeight: '700',
-                  fontSize: 15,
-                }}>
-                  Convidar
+                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
+                  {modalModo === 'criar_familia' ? 'Criar' : 'Convidar'}
                 </Text>
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
               style={{ paddingVertical: 12, alignItems: 'center' }}
-              onPress={() => {
-                setModalVisivel(false)
-                setEmailMembro('')
-              }}
+              onPress={fecharModal}
             >
-              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>
-                Cancelar
-              </Text>
+              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Usuario, Familia } from '../types'
 import * as authService from '../services/authService'
+import * as familiaService from '../services/familiaService'
 
 type AuthState = {
   usuario: Usuario | null
@@ -12,6 +13,7 @@ type AuthState = {
   register: (nome: string, email: string, senha: string) => Promise<void>
   logout: () => Promise<void>
   buscarPerfil: () => Promise<void>
+  criarFamilia: (nome: string) => Promise<void>
   convidarMembro: (email: string) => Promise<void>
   limparErro: () => void
 }
@@ -59,6 +61,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ usuario, familia, carregando: false })
     } catch {
       set({ carregando: false })
+    }
+  },
+
+  criarFamilia: async (nome) => {
+    set({ carregando: true, erro: null })
+    try {
+      const familia = await familiaService.criarFamilia(nome)
+      set({ familia, carregando: false })
+    } catch (error: any) {
+      set({ erro: error.message, carregando: false })
     }
   },
 

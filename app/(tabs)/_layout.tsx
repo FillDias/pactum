@@ -3,6 +3,8 @@ import { Tabs } from 'expo-router'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { colors } from '../../constants/colors'
+import { useResponsive } from '../../hooks/useResponsive'
+import DesktopLayout from '../../components/shared/DesktopLayout'
 
 function TabIcon({
   name,
@@ -22,30 +24,38 @@ function TabIcon({
 
 function TabsNavigator() {
   const insets = useSafeAreaInsets()
+  const { isDesktop } = useResponsive()
 
-  // No Android, insets.bottom pode retornar 0 ao voltar do background.
-  // Garantimos um padding mínimo para não sobrepor os botões do sistema.
   const bottomInset = Platform.OS === 'android'
     ? Math.max(insets.bottom, 8)
     : insets.bottom
 
+  const tabBarStyle = isDesktop
+    ? { display: 'none' as const }
+    : {
+        backgroundColor: colors.bg.secondary,
+        borderTopColor: colors.bg.border,
+        borderTopWidth: 1,
+        height: 56 + bottomInset,
+        paddingBottom: bottomInset,
+        paddingTop: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      }
+
   return (
+    <DesktopLayout>
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.bg.secondary,
-          borderTopColor: colors.bg.border,
-          borderTopWidth: 1,
-          height: 56 + bottomInset,
-          paddingBottom: bottomInset,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: colors.accent.main,
+        tabBarStyle,
+        tabBarActiveTintColor: colors.text.primary,
         tabBarInactiveTintColor: colors.text.tertiary,
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '500',
+          fontWeight: '600',
           letterSpacing: 0.2,
           marginTop: 2,
         },
@@ -101,6 +111,7 @@ function TabsNavigator() {
       <Tabs.Screen name="relatorio" options={{ href: null }} />
       <Tabs.Screen name="two" options={{ href: null }} />
     </Tabs>
+    </DesktopLayout>
   )
 }
 

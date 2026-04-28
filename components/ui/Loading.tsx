@@ -1,5 +1,5 @@
-// Tela de carregamento reutilizável
 import { View, ActivityIndicator, Text } from 'react-native'
+import { colors } from '../../constants/colors'
 
 type Props = {
   mensagem?: string
@@ -7,9 +7,9 @@ type Props = {
 
 export default function Loading({ mensagem = 'Carregando...' }: Props) {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <ActivityIndicator size="large" color="#1e1b4b" />
-      <Text className="text-gray-400 mt-3 text-sm">{mensagem}</Text>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg.primary }}>
+      <ActivityIndicator size="large" color={colors.text.primary} />
+      <Text style={{ color: colors.text.tertiary, marginTop: 12, fontSize: 14 }}>{mensagem}</Text>
     </View>
   )
 }

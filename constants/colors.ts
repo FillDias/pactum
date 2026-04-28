@@ -1,23 +1,23 @@
 export const colors = {
   bg: {
-    primary:   '#111111',
-    secondary: '#181818',
-    card:      '#202020',
-    input:     '#282828',
-    border:    '#303030',
+    primary:   '#FFFFFF',
+    secondary: '#F7F7F5',
+    card:      '#FFFFFF',
+    input:     '#F4F4F2',
+    border:    '#E8E8E8',
   },
   text: {
-    primary:   '#F0F0F0',
-    secondary: '#9A9A9A',
-    tertiary:  '#6A6A6A',
-    inverse:   '#111111',
+    primary:   '#0D0D0D',
+    secondary: '#555555',
+    tertiary:  '#999999',
+    inverse:   '#0D0D0D',
   },
   accent: {
     main:      '#C8BFA8',
     dark:      '#B0A890',
   },
   status: {
-    positive:  '#3D9E6E',
+    positive:  '#2D8A5E',
     negative:  '#C94F4F',
     warning:   '#C9943A',
   },

@@ -111,3 +111,65 @@ export type InvestimentoComCotacao = Investimento & {
   cotacao?: Cotacao
   rendimentoReal?: number
 }
+
+// --- Pactum Core ---
+
+export type Portfolio = {
+  id: string
+  name: string
+  description: string | null
+  currency: string
+  created_at: string
+  updated_at: string
+}
+
+export type PortfolioTransaction = {
+  id: string
+  security_id: string
+  ticker: string
+  transaction_type: 'BUY' | 'SELL'
+  quantity: number
+  price: number
+  date: string
+  broker: string | null
+  created_at: string
+}
+
+export type Position = {
+  ticker: string
+  name: string
+  securityType: string
+  quantity: number
+  averagePrice: number
+  currentPrice: number
+  costBasis: number
+  marketValue: number
+  pl: number
+  plPercent: number
+  priceSource: 'brapi' | 'last_transaction'
+  maturityDate?: string | null
+  annualRate?: number | null
+  indexType?: string | null
+}
+
+export type PortfolioSummary = {
+  portfolioId: string
+  portfolioName: string
+  currency: string
+  totalCost: number
+  totalMarketValue: number
+  totalPl: number
+  totalPlPercent: number
+  positions: Position[]
+}
+
+export type Security = {
+  id: string
+  ticker: string
+  name: string
+  security_type: string
+  annual_rate: number | null
+  index_type: string | null
+  maturity_date: string | null
+  currency: string | null
+}

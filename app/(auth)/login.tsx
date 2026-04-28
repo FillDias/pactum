@@ -30,7 +30,7 @@ export default function Login() {
       style={{ flex: 1, backgroundColor: colors.bg.primary }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg.primary} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.bg.primary} />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
@@ -40,7 +40,7 @@ export default function Login() {
             <Text style={{
               fontSize: 36,
               fontWeight: '700',
-              color: colors.accent.main,
+              color: colors.text.primary,
               letterSpacing: 2,
             }}>
               PACTUM
