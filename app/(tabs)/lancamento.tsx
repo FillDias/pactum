@@ -13,18 +13,11 @@ import {
 import { useFocusEffect } from 'expo-router'
 import { useFinancasStore } from '../../store/financasStore'
 import { useSaldoStore } from '../../store/saldoStore'
-import { CATEGORIAS, VENCIMENTOS } from '../../constants/categories'
+import { CATEGORIAS, CATEGORIAS_RECEITA, VENCIMENTOS } from '../../constants/categories'
 import { colors } from '../../constants/colors'
 import { formatarMoeda } from '../../utils/formatters'
 import { useResponsive } from '../../hooks/useResponsive'
-
-const CATEGORIAS_RECEITA = [
-  { id: 'r1', nome: 'Salario',      icone: '💰' },
-  { id: 'r2', nome: 'Freela',       icone: '💻' },
-  { id: 'r3', nome: 'Bonus',        icone: '🎁' },
-  { id: 'r4', nome: 'Investimento', icone: '📈' },
-  { id: 'r5', nome: 'Outros',       icone: '📦' },
-]
+import MesNavegador from '../../components/shared/MesNavegador'
 
 export default function Lancamento() {
   const { isDesktop } = useResponsive()
@@ -45,6 +38,7 @@ export default function Lancamento() {
     carregando,
     mesSelecionado,
     anoSelecionado,
+    setMesSelecionado,
   } = useFinancasStore()
   const { buscarSaldo } = useSaldoStore()
 
@@ -127,11 +121,21 @@ export default function Lancamento() {
         <View style={isDesktop ? { alignSelf: 'center', width: '100%', maxWidth: 600 } : undefined}>
 
           {/* Header */}
-          <View style={{ paddingHorizontal: 24, paddingTop: Platform.OS === 'web' ? 24 : 56, paddingBottom: 20 }}>
-            <Text style={sectionLabel}>Financas</Text>
-            <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text.primary, marginTop: 4 }}>
-              Lancamentos
-            </Text>
+          <View style={{
+            paddingHorizontal: 24, paddingTop: Platform.OS === 'web' ? 24 : 56, paddingBottom: 20,
+            flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+          }}>
+            <View>
+              <Text style={sectionLabel}>Financas</Text>
+              <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text.primary, marginTop: 4 }}>
+                Lancamentos
+              </Text>
+            </View>
+            <MesNavegador
+              mes={mesSelecionado}
+              ano={anoSelecionado}
+              onChange={(m, a) => setMesSelecionado(m, a)}
+            />
           </View>
 
           {/* Resumo */}

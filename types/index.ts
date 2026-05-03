@@ -59,20 +59,6 @@ export type Receita = {
   created_at: string
 }
 
-export type Investimento = {
-  id: string
-  user_id: string
-  nome: string
-  tipo: string
-  valor_investido: number
-  quantidade: number | null
-  rentabilidade_tipo: 'cdi' | 'selic' | 'prefixado' | 'variavel' | null
-  rentabilidade_percentual: number | null
-  data_inicio: string
-  vencimento: string | null
-  rendimento_mensal_estimado: number
-  created_at: string
-}
 
 export type Saldo = {
   saldo: number
@@ -90,26 +76,6 @@ export type Meta = {
   valor_atual: number
   prazo: string
   created_at: string
-}
-
-export type Categoria = {
-  id: string
-  nome: string
-  icone: string
-  cor: string
-}
-
-export type Cotacao = {
-  symbol: string
-  shortName: string
-  preco: number
-  variacao: number
-  variacaoPercent: number
-}
-
-export type InvestimentoComCotacao = Investimento & {
-  cotacao?: Cotacao
-  rendimentoReal?: number
 }
 
 // --- Pactum Core ---
@@ -136,6 +102,7 @@ export type PortfolioTransaction = {
 }
 
 export type Position = {
+  securityId?: string
   ticker: string
   name: string
   securityType: string
@@ -146,7 +113,7 @@ export type Position = {
   marketValue: number
   pl: number
   plPercent: number
-  priceSource: 'brapi' | 'last_transaction'
+  priceSource: 'brapi' | 'last_transaction' | 'estimated' | 'unavailable'
   maturityDate?: string | null
   annualRate?: number | null
   indexType?: string | null

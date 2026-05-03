@@ -3,12 +3,13 @@ import {
   View,
   Text,
   ScrollView,
+  TouchableOpacity,
   ActivityIndicator,
   StatusBar,
   Platform,
   useWindowDimensions,
 } from 'react-native'
-import { useFocusEffect } from 'expo-router'
+import { useFocusEffect, router } from 'expo-router'
 import { PieChart, LineChart } from 'react-native-chart-kit'
 import { useFinancasStore } from '../../store/financasStore'
 import { usePortfolioStore } from '../../store/portfolioStore'
@@ -18,6 +19,7 @@ import { formatarMoeda } from '../../utils/formatters'
 import { colors } from '../../constants/colors'
 import { useResponsive } from '../../hooks/useResponsive'
 import * as saldoService from '../../services/saldoService'
+import { Saldo } from '../../types'
 
 const CATEGORIA_CORES: Record<string, string> = {
   moradia:      '#4A90D9',
@@ -328,7 +330,12 @@ export default function Relatorio() {
         {/* --- 5. Metas --- */}
         {metas.length > 0 && (
           <View style={cardStyle}>
-            <Text style={sectionLabel}>Metas</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={sectionLabel}>Metas</Text>
+              <TouchableOpacity onPress={() => router.push('/metas' as any)}>
+                <Text style={{ fontSize: 12, color: colors.accent.main }}>Ver todas →</Text>
+              </TouchableOpacity>
+            </View>
             {metas.map(meta => {
               const progresso = calcularProgressoMeta(meta.valor_atual, meta.valor_alvo)
               return (
