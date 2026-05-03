@@ -9,7 +9,9 @@ import {
   ActivityIndicator,
   Alert,
   StatusBar,
+  Platform,
 } from 'react-native'
+import { useResponsive } from '../../hooks/useResponsive'
 import { useReceitaStore } from '../../store/receitaStore'
 import { useFinancasStore } from '../../store/financasStore'
 import { formatarMoeda } from '../../utils/formatters'
@@ -25,6 +27,7 @@ const TIPOS_RECEITA = [
 ]
 
 export default function Receitas() {
+  const { isDesktop } = useResponsive()
   const [modalVisivel, setModalVisivel] = useState(false)
   const [descricao, setDescricao] = useState('')
   const [valor, setValor] = useState('')
@@ -92,10 +95,10 @@ export default function Receitas() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg.primary }}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg.primary} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.bg.primary} />
 
       {/* Header */}
-      <View style={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 24 }}>
+      <View style={{ paddingHorizontal: 24, paddingTop: Platform.OS === 'web' ? 24 : 56, paddingBottom: 24 }}>
         <Text style={{
           fontSize: 11,
           color: colors.text.tertiary,
@@ -129,7 +132,9 @@ export default function Receitas() {
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20 }}
+        contentContainerStyle={isDesktop
+          ? { alignSelf: 'center', width: '100%', maxWidth: 600, paddingHorizontal: 20 }
+          : { paddingHorizontal: 20 }}
         showsVerticalScrollIndicator={false}
       >
         {carregando ? (

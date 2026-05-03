@@ -24,7 +24,7 @@ export default function Register() {
     if (!nome || !email || !senha) return
     if (senha.length < 6) return
     await register(nome, email, senha)
-    if (!erro) router.replace('/(tabs)')
+    if (!useAuthStore.getState().erro) router.replace('/(auth)/verify-email' as any)
   }
 
   return (
@@ -32,7 +32,7 @@ export default function Register() {
       style={{ flex: 1, backgroundColor: colors.bg.primary }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg.primary} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.bg.primary} />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
@@ -42,7 +42,7 @@ export default function Register() {
             <Text style={{
               fontSize: 36,
               fontWeight: '700',
-              color: colors.accent.main,
+              color: colors.text.primary,
               letterSpacing: 2,
             }}>
               PACTUM

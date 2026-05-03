@@ -8,9 +8,12 @@ const mapLancamento = (l: any): Lancamento => ({
 
 export const buscarLancamentos = async (
   mes: number,
-  ano: number
+  ano: number,
+  categoria?: string
 ): Promise<Lancamento[]> => {
-  const data = await api.get(`/lancamentos?mes=${mes}&ano=${ano}`)
+  const params = new URLSearchParams({ mes: String(mes), ano: String(ano) })
+  if (categoria) params.set('categoria', categoria)
+  const data = await api.get(`/lancamentos?${params.toString()}`)
   return data.lancamentos.map(mapLancamento)
 }
 

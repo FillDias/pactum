@@ -59,20 +59,6 @@ export type Receita = {
   created_at: string
 }
 
-export type Investimento = {
-  id: string
-  user_id: string
-  nome: string
-  tipo: string
-  valor_investido: number
-  quantidade: number | null
-  rentabilidade_tipo: 'cdi' | 'selic' | 'prefixado' | 'variavel' | null
-  rentabilidade_percentual: number | null
-  data_inicio: string
-  vencimento: string | null
-  rendimento_mensal_estimado: number
-  created_at: string
-}
 
 export type Saldo = {
   saldo: number
@@ -92,22 +78,65 @@ export type Meta = {
   created_at: string
 }
 
-export type Categoria = {
+// --- Pactum Core ---
+
+export type Portfolio = {
   id: string
-  nome: string
-  icone: string
-  cor: string
+  name: string
+  description: string | null
+  currency: string
+  created_at: string
+  updated_at: string
 }
 
-export type Cotacao = {
-  symbol: string
-  shortName: string
-  preco: number
-  variacao: number
-  variacaoPercent: number
+export type PortfolioTransaction = {
+  id: string
+  security_id: string
+  ticker: string
+  transaction_type: 'BUY' | 'SELL'
+  quantity: number
+  price: number
+  date: string
+  broker: string | null
+  created_at: string
 }
 
-export type InvestimentoComCotacao = Investimento & {
-  cotacao?: Cotacao
-  rendimentoReal?: number
+export type Position = {
+  securityId?: string
+  ticker: string
+  name: string
+  securityType: string
+  quantity: number
+  averagePrice: number
+  currentPrice: number
+  costBasis: number
+  marketValue: number
+  pl: number
+  plPercent: number
+  priceSource: 'brapi' | 'last_transaction' | 'estimated' | 'unavailable'
+  maturityDate?: string | null
+  annualRate?: number | null
+  indexType?: string | null
+}
+
+export type PortfolioSummary = {
+  portfolioId: string
+  portfolioName: string
+  currency: string
+  totalCost: number
+  totalMarketValue: number
+  totalPl: number
+  totalPlPercent: number
+  positions: Position[]
+}
+
+export type Security = {
+  id: string
+  ticker: string
+  name: string
+  security_type: string
+  annual_rate: number | null
+  index_type: string | null
+  maturity_date: string | null
+  currency: string | null
 }

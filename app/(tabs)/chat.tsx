@@ -16,11 +16,12 @@ export default function Chat() {
   const [mensagem, setMensagem] = useState('')
   const flatListRef = useRef<FlatList>(null)
   const { usuario } = useAuthStore()
-  const { mensagens, buscarMensagens, enviarMensagem, adicionarMensagemLocal } =
+  const { mensagens, buscarMensagens, marcarComoLidas, enviarMensagem, adicionarMensagemLocal } =
     useChatStore()
 
   useEffect(() => {
     buscarMensagens()
+    marcarComoLidas()
 
     const subscription = chatService.assinarMensagens((novaMensagem) => {
       if (novaMensagem.user_id !== usuario?.id) {

@@ -12,5 +12,13 @@ export const CATEGORIAS = [
   { id: '8', nome: 'Outros', icone: '📦', cor: '#6B7280' },
 ]
 
+export const CATEGORIAS_RECEITA = [
+  { id: 'r1', nome: 'Salario',      icone: '💼', cor: '#10B981' },
+  { id: 'r2', nome: 'Freela',       icone: '💻', cor: '#3B82F6' },
+  { id: 'r3', nome: 'Bonus',        icone: '🎁', cor: '#F59E0B' },
+  { id: 'r4', nome: 'Investimento', icone: '📈', cor: '#06B6D4' },
+  { id: 'r5', nome: 'Outros',       icone: '💰', cor: '#6B7280' },
+]
+
 // Dias de vencimento disponíveis para lançamentos recorrentes
 export const VENCIMENTOS = [5, 20, 30]
