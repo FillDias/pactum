@@ -25,7 +25,6 @@ function TabIcon({
 function TabsNavigator() {
   const insets = useSafeAreaInsets()
   const { isDesktop } = useResponsive()
-
   const bottomInset = Platform.OS === 'android'
     ? Math.max(insets.bottom, 8)
     : insets.bottom
@@ -74,21 +73,13 @@ function TabsNavigator() {
       <Tabs.Screen
         name="lancamento"
         options={{
-          title: 'Gastos',
+          title: 'Financas',
           tabBarIcon: ({ focused }) => (
             <TabIcon name="arrow-down-circle" focused={focused} />
           ),
         }}
       />
-      <Tabs.Screen
-        name="receitas"
-        options={{
-          title: 'Receitas',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="arrow-up-circle" focused={focused} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="chat" options={{ href: null }} />
       <Tabs.Screen
         name="investimentos"
         options={{
@@ -107,9 +98,16 @@ function TabsNavigator() {
           ),
         }}
       />
-      <Tabs.Screen name="chat" options={{ href: null }} />
-      <Tabs.Screen name="relatorio" options={{ href: null }} />
-      <Tabs.Screen name="two" options={{ href: null }} />
+      <Tabs.Screen
+        name="relatorio"
+        options={{
+          title: 'Relatorio',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="bar-chart-2" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen name="receitas" options={{ href: null }} />
     </Tabs>
     </DesktopLayout>
   )

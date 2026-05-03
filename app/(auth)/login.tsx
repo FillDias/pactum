@@ -125,6 +125,15 @@ export default function Login() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              style={{ alignItems: 'center', paddingVertical: 4 }}
+              onPress={() => { limparErro(); router.push('/(auth)/forgot-password' as any) }}
+            >
+              <Text style={{ color: colors.accent.main, fontSize: 13 }}>
+                Esqueci minha senha
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={{ paddingVertical: 12, alignItems: 'center' }}
               onPress={() => { limparErro(); router.push('/(auth)/register') }}
             >

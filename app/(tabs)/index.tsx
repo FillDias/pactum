@@ -9,11 +9,12 @@ import {
 } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
 import { useAuthStore } from '../../store/authStore'
+import MesNavegador from '../../components/shared/MesNavegador'
 import { useFinancasStore } from '../../store/financasStore'
 import { useSaldoStore } from '../../store/saldoStore'
 import { usePortfolioStore } from '../../store/portfolioStore'
 import { useChatStore } from '../../store/chatStore'
-import { formatarMoeda, formatarMesAno } from '../../utils/formatters'
+import { formatarMoeda } from '../../utils/formatters'
 import { colors } from '../../constants/colors'
 import SwipeableItem from '../../components/shared/SwipeableItem'
 import { useResponsive } from '../../hooks/useResponsive'
@@ -30,7 +31,7 @@ function diasParaVencer(maturityDate: string): number {
 export default function Inicio() {
   const { isDesktop } = useResponsive()
   const { usuario } = useAuthStore()
-  const { lancamentos, mesSelecionado, anoSelecionado, buscarLancamentos, removerLancamento } =
+  const { lancamentos, mesSelecionado, anoSelecionado, setMesSelecionado, buscarLancamentos, removerLancamento } =
     useFinancasStore()
   const { saldo, buscarSaldo } = useSaldoStore()
   const { portfolios, summaries, buscarPortfolios, buscarPosicoes } = usePortfolioStore()
@@ -121,9 +122,21 @@ export default function Inicio() {
           <Text style={{ fontSize: 12, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase' }}>
             Ola, {usuario?.nome}
           </Text>
-          <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text.primary, marginTop: 4 }}>
-            {formatarMesAno(mesSelecionado, anoSelecionado)}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+            <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text.primary }}>
+              Inicio
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/relatorio' as any)}>
+                <Text style={{ fontSize: 12, color: colors.accent.main }}>Relatorio →</Text>
+              </TouchableOpacity>
+              <MesNavegador
+                mes={mesSelecionado}
+                ano={anoSelecionado}
+                onChange={(m, a) => setMesSelecionado(m, a)}
+              />
+            </View>
+          </View>
         </View>
 
         <View style={isDesktop

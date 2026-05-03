@@ -24,7 +24,7 @@ export default function Register() {
     if (!nome || !email || !senha) return
     if (senha.length < 6) return
     await register(nome, email, senha)
-    if (!erro) router.replace('/(tabs)')
+    if (!useAuthStore.getState().erro) router.replace('/(auth)/verify-email' as any)
   }
 
   return (

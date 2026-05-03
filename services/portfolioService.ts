@@ -83,9 +83,37 @@ export async function calcularTWR(portfolioId: string): Promise<{ twr: number | 
   return res.data
 }
 
+export async function editarSecurity(id: string, data: {
+  name?: string
+  annual_rate?: number | null
+  index_type?: string | null
+  maturity_date?: string | null
+}): Promise<Security> {
+  const res = await coreApi.patch(`/securities/${id}`, data)
+  return res.data
+}
+
+export async function criarSecurity(data: {
+  ticker: string
+  name: string
+  security_type: string
+  currency?: string
+  annual_rate?: number
+  index_type?: string
+  maturity_date?: string
+}): Promise<Security> {
+  const res = await coreApi.post('/securities', data)
+  return res.data
+}
+
 export async function buscarSecurities(query: string): Promise<Security[]> {
   const res = await coreApi.get(`/securities/search?q=${encodeURIComponent(query)}`)
   return res.data ?? []
+}
+
+export async function buscarSecurityBrapi(ticker: string): Promise<Security> {
+  const res = await coreApi.get(`/securities/brapi_lookup?ticker=${encodeURIComponent(ticker.toUpperCase())}`)
+  return res.data
 }
 
 export async function loginCoreApi(email: string, password: string): Promise<string> {

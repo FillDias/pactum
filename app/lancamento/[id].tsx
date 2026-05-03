@@ -14,7 +14,7 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
 import { useFinancasStore } from '../../store/financasStore'
 import { useSaldoStore } from '../../store/saldoStore'
-import { CATEGORIAS, VENCIMENTOS } from '../../constants/categories'
+import { CATEGORIAS, CATEGORIAS_RECEITA, VENCIMENTOS } from '../../constants/categories'
 import { colors } from '../../constants/colors'
 import { formatarMoeda, formatarMesAno } from '../../utils/formatters'
 
@@ -34,9 +34,12 @@ export default function DetalhesLancamento() {
   const [modalVisivel, setModalVisivel] = useState(false)
   const [descricao, setDescricao] = useState(lancamento?.descricao ?? '')
   const [valor, setValor] = useState(String(lancamento?.valor ?? ''))
+  const [tipo, setTipo] = useState<'despesa' | 'receita'>(lancamento?.tipo ?? 'despesa')
   const [categoria, setCategoria] = useState(lancamento?.categoria ?? CATEGORIAS[0].nome)
   const [vencimento, setVencimento] = useState(lancamento?.vencimento ?? 5)
   const [recorrente, setRecorrente] = useState(lancamento?.recorrente ?? false)
+
+  const cats = tipo === 'despesa' ? CATEGORIAS : CATEGORIAS_RECEITA
 
   if (!lancamento) {
     return (
@@ -87,8 +90,9 @@ export default function DetalhesLancamento() {
     await editarLancamento(lancamento.id, {
       descricao,
       valor: parseFloat(valor.replace(',', '.')),
+      tipo,
       categoria,
-      vencimento,
+      vencimento: tipo === 'despesa' ? vencimento : undefined,
       recorrente,
     })
     setModalVisivel(false)
@@ -306,6 +310,27 @@ export default function DetalhesLancamento() {
                 Editar lancamento
               </Text>
 
+              {/* Tipo toggle */}
+              <View style={{ flexDirection: 'row', backgroundColor: colors.bg.input, borderRadius: 12, padding: 4, marginBottom: 16 }}>
+                {(['despesa', 'receita'] as const).map(t => (
+                  <TouchableOpacity
+                    key={t}
+                    onPress={() => {
+                      setTipo(t)
+                      setCategoria(t === 'despesa' ? CATEGORIAS[0].nome : CATEGORIAS_RECEITA[0].nome)
+                    }}
+                    style={{
+                      flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center',
+                      backgroundColor: tipo === t ? (t === 'despesa' ? colors.status.negative : colors.status.positive) : 'transparent',
+                    }}
+                  >
+                    <Text style={{ fontWeight: '700', fontSize: 13, color: tipo === t ? '#fff' : colors.text.tertiary }}>
+                      {t === 'despesa' ? 'Despesa' : 'Receita'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
               <TextInput
                 style={inputStyle}
                 placeholder="Descricao"
@@ -330,7 +355,7 @@ export default function DetalhesLancamento() {
                 style={{ marginBottom: 16 }}
               >
                 <View style={{ flexDirection: 'row', gap: 8 }}>
-                  {CATEGORIAS.map((cat) => (
+                  {cats.map((cat) => (
                     <TouchableOpacity
                       key={cat.id}
                       style={{
@@ -361,38 +386,42 @@ export default function DetalhesLancamento() {
                 </View>
               </ScrollView>
 
-              <Text style={{ ...labelSmall, marginBottom: 10 }}>Vencimento</Text>
-              <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
-                {VENCIMENTOS.map((dia) => (
-                  <TouchableOpacity
-                    key={dia}
-                    style={{
-                      flex: 1,
-                      paddingVertical: 12,
-                      borderRadius: 10,
-                      alignItems: 'center',
-                      backgroundColor: vencimento === dia
-                        ? colors.accent.main
-                        : colors.bg.input,
-                      borderWidth: 1,
-                      borderColor: vencimento === dia
-                        ? colors.accent.main
-                        : colors.bg.border,
-                    }}
-                    onPress={() => setVencimento(dia)}
-                  >
-                    <Text style={{
-                      color: vencimento === dia
-                        ? colors.text.inverse
-                        : colors.text.secondary,
-                      fontWeight: '600',
-                      fontSize: 13,
-                    }}>
-                      Dia {dia}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              {tipo === 'despesa' && (
+                <>
+                  <Text style={{ ...labelSmall, marginBottom: 10 }}>Vencimento</Text>
+                  <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+                    {VENCIMENTOS.map((dia) => (
+                      <TouchableOpacity
+                        key={dia}
+                        style={{
+                          flex: 1,
+                          paddingVertical: 12,
+                          borderRadius: 10,
+                          alignItems: 'center',
+                          backgroundColor: vencimento === dia
+                            ? colors.accent.main
+                            : colors.bg.input,
+                          borderWidth: 1,
+                          borderColor: vencimento === dia
+                            ? colors.accent.main
+                            : colors.bg.border,
+                        }}
+                        onPress={() => setVencimento(dia)}
+                      >
+                        <Text style={{
+                          color: vencimento === dia
+                            ? colors.text.inverse
+                            : colors.text.secondary,
+                          fontWeight: '600',
+                          fontSize: 13,
+                        }}>
+                          Dia {dia}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </>
+              )}
 
               <TouchableOpacity
                 style={{
