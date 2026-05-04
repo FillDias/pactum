@@ -4,12 +4,15 @@ import * as lancamentosService from '../services/lancamentosService'
 import { calcularSaldo, filtrarPorUsuario } from '../utils/calculators'
 import { getMesAtual, getAnoAtual } from '../utils/formatters'
 
+type Escopo = 'eu' | 'familia'
+
 type FinancasState = {
   lancamentos: Lancamento[]
   carregando: boolean
   erro: string | null
   mesSelecionado: number
   anoSelecionado: number
+  escopo: Escopo
 
   saldoFamiliar: () => number
   saldoPorUsuario: (usuarioId: string) => number
@@ -20,6 +23,7 @@ type FinancasState = {
   editarLancamento: (id: string, dados: Partial<Lancamento>) => Promise<void>
   removerLancamento: (id: string) => Promise<void>
   setMesSelecionado: (mes: number, ano: number) => void
+  setEscopo: (escopo: Escopo) => void
   limparErro: () => void
 }
 
@@ -29,6 +33,7 @@ export const useFinancasStore = create<FinancasState>((set, get) => ({
   erro: null,
   mesSelecionado: getMesAtual(),
   anoSelecionado: getAnoAtual(),
+  escopo: 'eu',
 
   saldoFamiliar: () => calcularSaldo(get().lancamentos),
 
@@ -41,10 +46,12 @@ export const useFinancasStore = create<FinancasState>((set, get) => ({
   buscarLancamentos: async () => {
     set({ carregando: true, erro: null })
     try {
-      const { mesSelecionado, anoSelecionado } = get()
+      const { mesSelecionado, anoSelecionado, escopo } = get()
       const lancamentos = await lancamentosService.buscarLancamentos(
         mesSelecionado,
-        anoSelecionado
+        anoSelecionado,
+        undefined,
+        escopo
       )
       set({ lancamentos, carregando: false })
     } catch (error: any) {
@@ -92,6 +99,7 @@ export const useFinancasStore = create<FinancasState>((set, get) => ({
   },
 
   setMesSelecionado: (mes, ano) => set({ mesSelecionado: mes, anoSelecionado: ano }),
+  setEscopo: (escopo) => set({ escopo }),
 
   limparErro: () => set({ erro: null }),
 }))

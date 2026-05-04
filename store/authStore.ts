@@ -15,6 +15,8 @@ type AuthState = {
   buscarPerfil: () => Promise<void>
   criarFamilia: (nome: string) => Promise<void>
   convidarMembro: (email: string) => Promise<void>
+  entrarFamilia: (codigo: string) => Promise<void>
+  buscarCodigoFamilia: () => Promise<string | null>
   limparErro: () => void
 }
 
@@ -83,6 +85,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ carregando: false })
     } catch (error: any) {
       set({ erro: error.message, carregando: false })
+    }
+  },
+
+  entrarFamilia: async (codigo) => {
+    set({ carregando: true, erro: null })
+    try {
+      const familia = await familiaService.entrarPorCodigo(codigo)
+      set({ familia, carregando: false })
+    } catch (error: any) {
+      set({ erro: error.message, carregando: false })
+    }
+  },
+
+  buscarCodigoFamilia: async () => {
+    try {
+      return await familiaService.buscarCodigo()
+    } catch {
+      return null
     }
   },
 

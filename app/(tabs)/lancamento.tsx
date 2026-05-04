@@ -13,6 +13,7 @@ import {
 import { useFocusEffect } from 'expo-router'
 import { useFinancasStore } from '../../store/financasStore'
 import { useSaldoStore } from '../../store/saldoStore'
+import { useAuthStore } from '../../store/authStore'
 import { CATEGORIAS, CATEGORIAS_RECEITA, VENCIMENTOS } from '../../constants/categories'
 import { colors } from '../../constants/colors'
 import { formatarMoeda } from '../../utils/formatters'
@@ -30,6 +31,8 @@ export default function Lancamento() {
   const [vencimento, setVencimento] = useState(5)
   const [recorrente, setRecorrente] = useState(false)
 
+  const { familia } = useAuthStore()
+
   const {
     lancamentos,
     adicionarLancamento,
@@ -39,13 +42,15 @@ export default function Lancamento() {
     mesSelecionado,
     anoSelecionado,
     setMesSelecionado,
+    escopo,
+    setEscopo,
   } = useFinancasStore()
   const { buscarSaldo } = useSaldoStore()
 
   useFocusEffect(
     useCallback(() => {
       buscarLancamentos()
-    }, [mesSelecionado, anoSelecionado])
+    }, [mesSelecionado, anoSelecionado, escopo])
   )
 
   const despesas = useMemo(() => lancamentos.filter(l => l.tipo === 'despesa'), [lancamentos])
@@ -80,7 +85,7 @@ export default function Lancamento() {
 
     setDescricao('')
     setValor('')
-    buscarSaldo(mesSelecionado, anoSelecionado)
+    buscarSaldo(mesSelecionado, anoSelecionado, escopo)
   }
 
   const handleRemover = (id: string, descricaoItem: string) => {
@@ -137,6 +142,42 @@ export default function Lancamento() {
               onChange={(m, a) => setMesSelecionado(m, a)}
             />
           </View>
+
+          {/* Toggle Eu / Familia */}
+          {familia && (
+            <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
+              <View style={{
+                flexDirection: 'row',
+                backgroundColor: colors.bg.card,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: colors.bg.border,
+                padding: 4,
+              }}>
+                {(['eu', 'familia'] as const).map(op => (
+                  <TouchableOpacity
+                    key={op}
+                    style={{
+                      flex: 1,
+                      paddingVertical: 9,
+                      borderRadius: 9,
+                      alignItems: 'center',
+                      backgroundColor: escopo === op ? colors.accent.main : 'transparent',
+                    }}
+                    onPress={() => setEscopo(op)}
+                  >
+                    <Text style={{
+                      color: escopo === op ? '#fff' : colors.text.secondary,
+                      fontWeight: '600',
+                      fontSize: 13,
+                    }}>
+                      {op === 'eu' ? 'Eu' : 'Familia'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
 
           {/* Resumo */}
           <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>

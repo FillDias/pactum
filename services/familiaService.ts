@@ -18,3 +18,13 @@ export const criarFamilia = async (nome: string): Promise<Familia> => {
 export const convidarMembro = async (familiaId: string, email: string): Promise<void> => {
   await api.post(`/familias/${familiaId}/convidar`, { email })
 }
+
+export const buscarCodigo = async (): Promise<string> => {
+  const data = await api.get('/familias/codigo')
+  return data.codigo
+}
+
+export const entrarPorCodigo = async (codigo: string): Promise<Familia> => {
+  const data = await api.post('/familias/entrar', { codigo })
+  return data.familia
+}

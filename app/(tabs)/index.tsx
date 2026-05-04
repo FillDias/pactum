@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -30,12 +30,14 @@ function diasParaVencer(maturityDate: string): number {
 
 export default function Inicio() {
   const { isDesktop } = useResponsive()
-  const { usuario } = useAuthStore()
+  const { usuario, familia } = useAuthStore()
   const { lancamentos, mesSelecionado, anoSelecionado, setMesSelecionado, buscarLancamentos, removerLancamento } =
     useFinancasStore()
   const { saldo, buscarSaldo } = useSaldoStore()
   const { portfolios, summaries, buscarPortfolios, buscarPosicoes } = usePortfolioStore()
   const { mensagens, buscarMensagens } = useChatStore()
+
+  const [escopoHome, setEscopoHome] = useState<'eu' | 'familia'>('familia')
 
   const carregarPortfolios = useCallback(async () => {
     await buscarPortfolios()
@@ -46,15 +48,15 @@ export default function Inicio() {
   useFocusEffect(
     useCallback(() => {
       buscarLancamentos()
-      buscarSaldo(mesSelecionado, anoSelecionado)
+      buscarSaldo(mesSelecionado, anoSelecionado, familia ? escopoHome : undefined)
       buscarMensagens()
       carregarPortfolios()
-    }, [mesSelecionado, anoSelecionado])
+    }, [mesSelecionado, anoSelecionado, escopoHome])
   )
 
   const handleDeletar = async (id: string) => {
     await removerLancamento(id)
-    buscarSaldo(mesSelecionado, anoSelecionado)
+    buscarSaldo(mesSelecionado, anoSelecionado, familia ? escopoHome : undefined)
   }
 
   const saldoValor = saldo?.saldo ?? 0
@@ -180,7 +182,44 @@ export default function Inicio() {
               borderWidth: 1,
               borderColor: colors.bg.border,
             }}>
-              <Text style={sectionLabel}>Saldo do mes</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                <Text style={sectionLabel}>Saldo do mes</Text>
+                {familia && (
+                  <View style={{
+                    flexDirection: 'row',
+                    backgroundColor: colors.bg.secondary,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: colors.bg.border,
+                    padding: 3,
+                    marginBottom: 10,
+                  }}>
+                    {(['eu', 'familia'] as const).map(op => (
+                      <TouchableOpacity
+                        key={op}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 5,
+                          borderRadius: 6,
+                          backgroundColor: escopoHome === op ? colors.accent.main : 'transparent',
+                        }}
+                        onPress={() => {
+                          setEscopoHome(op)
+                          buscarSaldo(mesSelecionado, anoSelecionado, op)
+                        }}
+                      >
+                        <Text style={{
+                          fontSize: 12,
+                          fontWeight: '600',
+                          color: escopoHome === op ? '#fff' : colors.text.secondary,
+                        }}>
+                          {op === 'eu' ? 'Eu' : 'Familia'}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
               <Text style={{ fontSize: isDesktop ? 48 : 38, fontWeight: '700', color: saldoColor, letterSpacing: -1 }}>
                 {formatarMoeda(saldoValor)}
               </Text>

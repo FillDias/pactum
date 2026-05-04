@@ -3,9 +3,13 @@ import { Saldo } from '../types'
 
 export const buscarSaldo = async (
   mes: number,
-  ano: number
+  ano: number,
+  escopo?: 'eu' | 'familia'
 ): Promise<Saldo> => {
-  const data = await api.get(`/saldo?mes=${mes}&ano=${ano}`)
+  let url = `/saldo?mes=${mes}&ano=${ano}`
+  if (escopo) url += `&escopo=${escopo}`
+
+  const data = await api.get(url)
   const s = data.saldo ?? data
 
   const toNum = (v: any): number => {

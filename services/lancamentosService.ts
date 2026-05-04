@@ -9,10 +9,12 @@ const mapLancamento = (l: any): Lancamento => ({
 export const buscarLancamentos = async (
   mes: number,
   ano: number,
-  categoria?: string
+  categoria?: string,
+  escopo?: 'eu' | 'familia'
 ): Promise<Lancamento[]> => {
   const params = new URLSearchParams({ mes: String(mes), ano: String(ano) })
   if (categoria) params.set('categoria', categoria)
+  if (escopo) params.set('escopo', escopo)
   const data = await api.get(`/lancamentos?${params.toString()}`)
   return data.lancamentos.map(mapLancamento)
 }
