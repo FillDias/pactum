@@ -8,9 +8,11 @@ export type Usuario = {
 
 export type FamiliaMembro = {
   id: string
-  familia_id: string
+  familia_id?: string
   user_id: string
   papel: 'dono' | 'membro'
+  nome?: string
+  email?: string
   usuario?: Usuario
 }
 
@@ -18,6 +20,7 @@ export type Familia = {
   id: string
   nome: string
   criador_id: string
+  codigo_convite?: string | null
   membros: FamiliaMembro[]
   created_at: string
 }

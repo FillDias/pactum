@@ -7,7 +7,7 @@ type SaldoState = {
   carregando: boolean
   erro: string | null
 
-  buscarSaldo: (mes: number, ano: number) => Promise<void>
+  buscarSaldo: (mes: number, ano: number, escopo?: 'eu' | 'familia') => Promise<void>
   limparErro: () => void
 }
 
@@ -16,10 +16,10 @@ export const useSaldoStore = create<SaldoState>((set) => ({
   carregando: false,
   erro: null,
 
-  buscarSaldo: async (mes, ano) => {
+  buscarSaldo: async (mes, ano, escopo) => {
     set({ carregando: true, erro: null })
     try {
-      const saldo = await saldoService.buscarSaldo(mes, ano)
+      const saldo = await saldoService.buscarSaldo(mes, ano, escopo)
       set({ saldo, carregando: false })
     } catch (error: any) {
       set({ erro: error.message, carregando: false })
