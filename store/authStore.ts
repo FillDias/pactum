@@ -30,7 +30,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ carregando: true, erro: null })
     try {
       const usuario = await authService.login(email, senha)
-      set({ usuario, carregando: false })
+      const familia = await familiaService.buscarFamiliaAtual()
+      set({ usuario, familia, carregando: false })
     } catch (error: any) {
       set({ erro: error.message, carregando: false })
     }
@@ -40,7 +41,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ carregando: true, erro: null })
     try {
       const usuario = await authService.register(nome, email, senha)
-      set({ usuario, carregando: false })
+      set({ usuario, familia: null, carregando: false })
     } catch (error: any) {
       set({ erro: error.message, carregando: false })
     }
