@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "pactum",
+    "name": "Pactum",
     "slug": "pactum",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,6 +17,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.filldias.pactum",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -34,6 +35,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a144f94c-8f89-4012-a553-4423505efc62"
+      }
     }
   }
 }
