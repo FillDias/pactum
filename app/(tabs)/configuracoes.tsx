@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   Modal,
   TextInput,
   ActivityIndicator,
@@ -12,6 +11,7 @@ import {
   Platform,
   Clipboard,
 } from 'react-native'
+import { showAlert, showConfirm } from '../../utils/alert'
 import { useResponsive } from '../../hooks/useResponsive'
 import { Feather } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -98,40 +98,37 @@ export default function Configuracoes() {
 
   const handleCriarFamilia = async () => {
     if (!nomeFamilia.trim()) {
-      Alert.alert('Atencao', 'Digite o nome da familia')
+      showAlert('Atencao', 'Digite o nome da familia')
       return
     }
     await criarFamilia(nomeFamilia.trim())
     if (!useAuthStore.getState().erro) {
       fecharModal()
-      Alert.alert('Sucesso', 'Familia criada!')
+      showAlert('Sucesso', 'Familia criada!')
     }
   }
 
   const handleEntrarFamilia = async () => {
     if (!codigoInput.trim()) {
-      Alert.alert('Atencao', 'Digite o codigo de convite')
+      showAlert('Atencao', 'Digite o codigo de convite')
       return
     }
     await entrarFamilia(codigoInput.trim().toUpperCase())
     if (!useAuthStore.getState().erro) {
       fecharModal()
-      Alert.alert('Sucesso', 'Voce entrou na familia!')
+      showAlert('Sucesso', 'Voce entrou na familia!')
     }
   }
 
   const handleCopiarCodigo = () => {
     if (familia?.codigo_convite) {
       Clipboard.setString(familia.codigo_convite)
-      Alert.alert('Copiado', 'Codigo copiado para a area de transferencia')
+      showAlert('Copiado', 'Codigo copiado para a area de transferencia')
     }
   }
 
   const handleLogout = () => {
-    Alert.alert('Sair', 'Deseja realmente sair?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Sair', style: 'destructive', onPress: logout },
-    ])
+    showConfirm('Sair', 'Deseja realmente sair?', logout, 'Sair', true)
   }
 
   const sectionLabel = {
