@@ -35,7 +35,8 @@ export default function Login() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={{ flex: 1, paddingHorizontal: 28, justifyContent: 'center' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: '100%', maxWidth: 420, paddingHorizontal: 28 }}>
           <View style={{ marginBottom: 48 }}>
             <Text style={{
               fontSize: 36,
@@ -142,6 +143,7 @@ export default function Login() {
                 <Text style={{ color: colors.accent.main }}>Cadastre-se</Text>
               </Text>
             </TouchableOpacity>
+          </View>
           </View>
         </View>
       </ScrollView>
