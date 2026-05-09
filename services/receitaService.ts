@@ -16,7 +16,9 @@ const mapToReceita = (l: any): Receita => ({
 
 export const buscarReceitas = async (mes: number, ano: number): Promise<Receita[]> => {
   const data = await api.get(`/lancamentos?tipo=receita&mes=${mes}&ano=${ano}`)
-  return (data.lancamentos || []).map(mapToReceita)
+  return (data.lancamentos || [])
+    .filter((l: any) => l.tipo === 'receita')
+    .map(mapToReceita)
 }
 
 export const adicionarReceita = async (

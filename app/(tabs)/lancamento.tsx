@@ -123,7 +123,7 @@ export default function Lancamento() {
     <View style={{ flex: 1, backgroundColor: colors.bg.primary }}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.bg.primary} />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={isDesktop ? { alignSelf: 'center', width: '100%', maxWidth: 600 } : undefined}>
+        <View style={isDesktop ? { maxWidth: 720 } : undefined}>
 
           {/* Header */}
           <View style={{
