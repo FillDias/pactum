@@ -8,32 +8,34 @@ import { Feather } from '@expo/vector-icons'
 
 // ── Paleta ────────────────────────────────────────────────────────────────────
 const C = {
-  fundo:   '#FFFFFF',
-  fundo2:  '#F7F6F3',
+  branco:  '#FFFFFF',
+  creme:   '#F4F3EF',     // fundo alternativo quente — igual ao Wealthsimple
+  creme2:  '#ECEAE3',     // levemente mais escuro para cards
   texto1:  '#1A1A1A',
-  texto2:  '#6B6B6B',
-  borda:   '#E5E5E3',
+  texto2:  '#6E6E6E',
+  texto3:  '#AAAAAA',
   verde:   '#2A7A50',
-  verdeBg: '#F0F9F4',
-  verdeBd: '#B8E0CC',
+  verdeBg: '#EBF5EF',
+  verdeBd: '#A8D5B8',
+  borda:   '#E0DED8',
 }
 const D = {
   fundo:  '#0A0A0A',
-  fundo2: '#0F0F0F',
-  card:   '#161616',
-  borda:  '#222222',
+  card:   '#131313',
+  borda:  '#1E1E1E',
   verde:  '#3D9E6E',
-  texto:  '#E0E0E0',
-  dim:    '#5A5A5A',
+  texto:  '#EAEAEA',
+  dim:    '#525252',
+  dim2:   '#353535',
 }
-const MAX_W = 1120
+const MAX_W = 1160
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function Centered({ children }: { children: React.ReactNode }) {
   const { width } = useWindowDimensions()
   return (
     <View style={{ alignItems: 'center', width: '100%' }}>
-      <View style={{ width: '100%', maxWidth: MAX_W, paddingHorizontal: width >= 768 ? 48 : 20 }}>
+      <View style={{ width: '100%', maxWidth: MAX_W, paddingHorizontal: width >= 768 ? 56 : 24 }}>
         {children}
       </View>
     </View>
@@ -42,34 +44,30 @@ function Centered({ children }: { children: React.ReactNode }) {
 
 function FadeUp({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const opacity = useRef(new Animated.Value(0)).current
-  const ty      = useRef(new Animated.Value(24)).current
+  const ty      = useRef(new Animated.Value(32)).current
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 650, delay, useNativeDriver: true }),
-      Animated.timing(ty,      { toValue: 0, duration: 650, delay, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 800, delay, useNativeDriver: true }),
+      Animated.timing(ty,      { toValue: 0, duration: 800, delay, useNativeDriver: true }),
     ]).start()
   }, [])
   return <Animated.View style={{ opacity, transform: [{ translateY: ty }] }}>{children}</Animated.View>
 }
 
-function Tag({ text, dark }: { text: string; dark?: boolean }) {
+// Eyebrow — letras pequenas acima do título (estilo Wealthsimple)
+function Eyebrow({ text, light }: { text: string; light?: boolean }) {
   return (
-    <View style={{
-      alignSelf: 'flex-start',
-      borderWidth: 1,
-      borderColor: dark ? D.borda : C.borda,
-      borderRadius: 20,
-      paddingHorizontal: 14,
-      paddingVertical: 6,
-      marginBottom: 28,
+    <Text style={{
+      fontSize: 11,
+      fontWeight: '600',
+      letterSpacing: 2.5,
+      textTransform: 'uppercase',
+      color: light ? D.dim : C.texto3,
+      marginBottom: 20,
     }}>
-      <Text style={{ color: dark ? D.dim : C.texto2, fontSize: 12, letterSpacing: 0.6 }}>{text}</Text>
-    </View>
+      {text}
+    </Text>
   )
-}
-
-function Divisor({ dark }: { dark?: boolean }) {
-  return <View style={{ height: 1, backgroundColor: dark ? D.borda : C.borda }} />
 }
 
 // ── Browser Mockup ────────────────────────────────────────────────────────────
@@ -77,67 +75,60 @@ function BrowserMockup() {
   const [count, setCount] = useState(0)
   const target = 3570.10
   useEffect(() => {
-    let v = 0
-    const step = target / 60
+    let v = 0; const step = target / 70
     const t = setInterval(() => {
       v += step
       if (v >= target) { setCount(target); clearInterval(t) }
       else setCount(Math.round(v * 100) / 100)
-    }, 20)
+    }, 18)
     return () => clearInterval(t)
   }, [])
   const items = [
-    { desc: 'Salario',  val: '+5.000,00', pos: true  },
-    { desc: 'Aluguel',  val: '-1.200,00', pos: false },
-    { desc: 'Freela',   val: '+800,00',   pos: true  },
-    { desc: 'Netflix',  val: '-29,90',    pos: false },
+    { desc: 'Salário',   val: '+5.000,00', pos: true  },
+    { desc: 'Aluguel',   val: '-1.200,00', pos: false },
+    { desc: 'Freela',    val: '+800,00',   pos: true  },
+    { desc: 'Netflix',   val: '-29,90',    pos: false },
   ]
   return (
-    <View style={{
-      borderRadius: 16, overflow: 'hidden',
-      borderWidth: 1, borderColor: '#222',
-      shadowColor: '#000', shadowOffset: { width: 0, height: 32 },
-      shadowOpacity: 0.4, shadowRadius: 64,
-    }}>
-      <View style={{ height: 38, backgroundColor: '#1A1A1A', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 7 }}>
-        {['#FF5F57','#FFBD2E','#28CA41'].map(c => (
-          <View key={c} style={{ width: 11, height: 11, borderRadius: 6, backgroundColor: c }} />
-        ))}
+    <View style={{ borderRadius: 18, overflow: 'hidden', backgroundColor: '#0C0C0C', shadowColor: '#000', shadowOffset: { width: 0, height: 40 }, shadowOpacity: 0.45, shadowRadius: 80 }}>
+      {/* Chrome */}
+      <View style={{ height: 40, backgroundColor: '#161616', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 8 }}>
+        {['#FF5F57','#FFBD2E','#28CA41'].map(c => <View key={c} style={{ width: 11, height: 11, borderRadius: 6, backgroundColor: c }} />)}
         <View style={{ flex: 1, alignItems: 'center' }}>
-          <View style={{ backgroundColor: '#2A2A2A', borderRadius: 6, paddingHorizontal: 16, paddingVertical: 4 }}>
-            <Text style={{ color: '#666', fontSize: 11 }}>pactum.app</Text>
+          <View style={{ backgroundColor: '#222', borderRadius: 6, paddingHorizontal: 18, paddingVertical: 4 }}>
+            <Text style={{ color: '#555', fontSize: 11 }}>pactum.app</Text>
           </View>
         </View>
       </View>
-      <View style={{ backgroundColor: '#0E0E0E', padding: 20, minWidth: 300 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+      {/* App */}
+      <View style={{ padding: 22 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 }}>
           <Text style={{ color: '#C8BFA8', fontSize: 12, fontWeight: '800', letterSpacing: 3 }}>PACTUM</Text>
-          <Text style={{ color: '#444', fontSize: 10 }}>Maio 2026</Text>
+          <Text style={{ color: '#3A3A3A', fontSize: 10 }}>Maio 2026</Text>
         </View>
-        <View style={{ backgroundColor: '#161616', borderRadius: 14, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: '#222' }}>
-          <Text style={{ color: '#444', fontSize: 8, letterSpacing: 2, textTransform: 'uppercase' }}>Saldo do mes</Text>
-          <Text style={{ color: '#C8BFA8', fontSize: 26, fontWeight: '700', marginTop: 6, letterSpacing: -1 }}>
+        {/* Saldo */}
+        <View style={{ backgroundColor: '#141414', borderRadius: 14, padding: 18, marginBottom: 16 }}>
+          <Text style={{ color: '#3A3A3A', fontSize: 8, letterSpacing: 2, textTransform: 'uppercase' }}>Saldo do mês</Text>
+          <Text style={{ color: '#C8BFA8', fontSize: 28, fontWeight: '700', marginTop: 6, letterSpacing: -1 }}>
             R$ {count.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </Text>
-          <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-            <View style={{ flex: 1, backgroundColor: '#0D1E14', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: '#1A3020' }}>
-              <Text style={{ color: D.verde, fontSize: 8, letterSpacing: 1 }}>RECEITAS</Text>
-              <Text style={{ color: D.verde, fontSize: 13, fontWeight: '700', marginTop: 3 }}>+R$ 5.800</Text>
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+            <View style={{ flex: 1, backgroundColor: '#0D1E14', borderRadius: 10, padding: 12 }}>
+              <Text style={{ color: D.verde, fontSize: 8, letterSpacing: 1, marginBottom: 4 }}>RECEITAS</Text>
+              <Text style={{ color: D.verde, fontSize: 14, fontWeight: '700' }}>+R$ 5.800</Text>
             </View>
-            <View style={{ flex: 1, backgroundColor: '#1E0D0D', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: '#301A1A' }}>
-              <Text style={{ color: '#C94F4F', fontSize: 8, letterSpacing: 1 }}>GASTOS</Text>
-              <Text style={{ color: '#C94F4F', fontSize: 13, fontWeight: '700', marginTop: 3 }}>-R$ 2.230</Text>
+            <View style={{ flex: 1, backgroundColor: '#1E0D0D', borderRadius: 10, padding: 12 }}>
+              <Text style={{ color: '#C94F4F', fontSize: 8, letterSpacing: 1, marginBottom: 4 }}>GASTOS</Text>
+              <Text style={{ color: '#C94F4F', fontSize: 14, fontWeight: '700' }}>-R$ 2.230</Text>
             </View>
           </View>
         </View>
-        <Text style={{ color: '#333', fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>Lançamentos</Text>
+        {/* Lançamentos */}
+        <Text style={{ color: '#2A2A2A', fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10 }}>Lançamentos</Text>
         {items.map((t, i) => (
-          <View key={i} style={{
-            flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-            paddingVertical: 8, borderBottomWidth: i < items.length - 1 ? 1 : 0, borderBottomColor: '#1A1A1A',
-          }}>
-            <Text style={{ color: '#888', fontSize: 12 }}>{t.desc}</Text>
-            <Text style={{ color: t.pos ? D.verde : '#C94F4F', fontSize: 12, fontWeight: '600' }}>{t.val}</Text>
+          <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 9, borderBottomWidth: i < items.length - 1 ? 1 : 0, borderBottomColor: '#1A1A1A' }}>
+            <Text style={{ color: '#777', fontSize: 13 }}>{t.desc}</Text>
+            <Text style={{ color: t.pos ? D.verde : '#C94F4F', fontSize: 13, fontWeight: '600' }}>{t.val}</Text>
           </View>
         ))}
       </View>
@@ -148,23 +139,23 @@ function BrowserMockup() {
 // ── Header ────────────────────────────────────────────────────────────────────
 function LandingHeader() {
   const { width } = useWindowDimensions()
-  const isDesktop = width >= 768
+  const desk = width >= 768
   return (
-    <View style={{ height: 64, backgroundColor: C.fundo, borderBottomWidth: 1, borderBottomColor: C.borda, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={{ width: '100%', maxWidth: MAX_W, paddingHorizontal: isDesktop ? 48 : 20, flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={{ fontSize: 17, fontWeight: '800', color: C.texto1, letterSpacing: 3.5, flex: 1 }}>PACTUM</Text>
-        {isDesktop && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 32 }}>
-            <Text style={{ color: C.texto2, fontSize: 14 }}>Recursos</Text>
-            <Text style={{ color: C.texto2, fontSize: 14 }}>API</Text>
-            <Text style={{ color: C.texto2, fontSize: 14 }}>Sobre</Text>
+    <View style={{ height: 66, backgroundColor: C.branco, borderBottomWidth: 1, borderBottomColor: C.borda, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: '100%', maxWidth: MAX_W, paddingHorizontal: desk ? 56 : 24, flexDirection: 'row', alignItems: 'center' }}>
+        <Text style={{ fontSize: 16, fontWeight: '900', color: C.texto1, letterSpacing: 4, flex: 1 }}>PACTUM</Text>
+        {desk && (
+          <View style={{ flexDirection: 'row', gap: 36, marginRight: 36 }}>
+            {['Recursos', 'API', 'Sobre'].map(l => (
+              <Text key={l} style={{ color: C.texto2, fontSize: 14 }}>{l}</Text>
+            ))}
           </View>
         )}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: isDesktop ? 32 : 0 }}>
-          <TouchableOpacity onPress={() => router.push('/login')} style={{ borderWidth: 1, borderColor: C.borda, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 }}>
-            <Text style={{ color: C.texto1, fontSize: 14, fontWeight: '500' }}>Entrar</Text>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <TouchableOpacity onPress={() => router.push('/login')} style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 8, borderWidth: 1, borderColor: C.borda }}>
+            <Text style={{ color: C.texto1, fontSize: 14 }}>Entrar</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/register')} style={{ backgroundColor: C.texto1, paddingHorizontal: 18, paddingVertical: 9, borderRadius: 8 }}>
+          <TouchableOpacity onPress={() => router.push('/register')} style={{ paddingHorizontal: 18, paddingVertical: 9, borderRadius: 8, backgroundColor: C.texto1 }}>
             <Text style={{ color: '#FFF', fontSize: 14, fontWeight: '600' }}>Começar grátis</Text>
           </TouchableOpacity>
         </View>
@@ -176,127 +167,131 @@ function LandingHeader() {
 // ── Hero ──────────────────────────────────────────────────────────────────────
 function HeroSection() {
   const { width } = useWindowDimensions()
-  const isDesktop = width >= 1024
+  const desk = width >= 1024
+
   return (
-    <View style={{ backgroundColor: C.fundo, paddingVertical: isDesktop ? 100 : 60 }}>
+    <View style={{ backgroundColor: C.branco, paddingTop: desk ? 120 : 72, paddingBottom: desk ? 100 : 64 }}>
       <Centered>
-        <View style={{ flexDirection: isDesktop ? 'row' : 'column', alignItems: 'center', gap: 64 }}>
-          <View style={{ flex: isDesktop ? 3 : undefined }}>
-            <FadeUp>
-              <View style={{
-                alignSelf: 'flex-start', backgroundColor: C.verdeBg,
-                borderWidth: 1, borderColor: C.verdeBd, borderRadius: 20,
-                paddingHorizontal: 14, paddingVertical: 6, marginBottom: 36,
-              }}>
-                <Text style={{ color: C.verde, fontSize: 12, fontWeight: '500' }}>
-                  Disponível para iOS, Android e Web
-                </Text>
-              </View>
+        {/* Badge */}
+        <FadeUp>
+          <View style={{ alignSelf: desk ? 'center' : 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.verdeBg, borderWidth: 1, borderColor: C.verdeBd, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 7, marginBottom: 48 }}>
+            <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: C.verde }} />
+            <Text style={{ color: C.verde, fontSize: 13, fontWeight: '500' }}>Disponível para iOS, Android e Web</Text>
+          </View>
+        </FadeUp>
 
-              <Text style={{
-                fontSize: isDesktop ? 72 : 44,
-                fontWeight: '800',
-                color: C.texto1,
-                lineHeight: isDesktop ? 80 : 54,
-                letterSpacing: -2.5,
-                marginBottom: 28,
-              }}>
-                {'Finanças que a família\nentende juntos'}
-              </Text>
+        {/* Headline principal — estilo Wealthsimple: enorme, bold, respirando */}
+        <FadeUp delay={80}>
+          <Text style={{
+            fontSize: desk ? 96 : 52,
+            fontWeight: '900',
+            color: C.texto1,
+            letterSpacing: desk ? -4 : -2,
+            lineHeight: desk ? 104 : 60,
+            textAlign: desk ? 'center' : 'left',
+            marginBottom: 32,
+          }}>
+            {'Finanças que a família\nentende juntos'}
+          </Text>
+        </FadeUp>
 
-              <Text style={{ fontSize: 18, color: C.texto2, lineHeight: 32, marginBottom: 44, maxWidth: 520 }}>
-                Pactum é o app de gestão financeira familiar — acompanhe gastos, receitas, investimentos e metas com todo mundo no mesmo painel, em tempo real.
-              </Text>
+        <FadeUp delay={160}>
+          <Text style={{
+            fontSize: desk ? 20 : 17,
+            color: C.texto2,
+            lineHeight: desk ? 34 : 28,
+            textAlign: desk ? 'center' : 'left',
+            maxWidth: 580,
+            alignSelf: desk ? 'center' : 'flex-start',
+            marginBottom: 48,
+          }}>
+            Pactum é o app de gestão financeira familiar — acompanhe gastos, receitas, investimentos e metas com todo mundo no mesmo painel, em tempo real.
+          </Text>
+        </FadeUp>
 
-              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                <TouchableOpacity
-                  style={{ backgroundColor: C.texto1, paddingHorizontal: 28, paddingVertical: 14, borderRadius: 10 }}
-                >
-                  <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '700' }}>Explorar o app ↓</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{ borderWidth: 1, borderColor: C.borda, paddingHorizontal: 24, paddingVertical: 13, borderRadius: 10 }}
-                >
-                  <Text style={{ color: C.texto1, fontSize: 15, fontWeight: '500' }}>Ver a API →</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 36 }}>
-                {['iOS nativo', 'Android nativo', 'Web browser', 'API REST pública'].map(p => (
-                  <View key={p} style={{
-                    backgroundColor: C.fundo2, borderWidth: 1, borderColor: C.borda,
-                    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
-                  }}>
-                    <Text style={{ color: C.texto2, fontSize: 12 }}>{p}</Text>
-                  </View>
-                ))}
-              </View>
-            </FadeUp>
+        <FadeUp delay={240}>
+          <View style={{ flexDirection: 'row', justifyContent: desk ? 'center' : 'flex-start', gap: 14, flexWrap: 'wrap', marginBottom: 56 }}>
+            <TouchableOpacity style={{ backgroundColor: C.texto1, paddingHorizontal: 32, paddingVertical: 16, borderRadius: 10 }}>
+              <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '700' }}>Explorar o app ↓</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ paddingHorizontal: 28, paddingVertical: 15, borderRadius: 10, borderWidth: 1.5, borderColor: C.borda }}>
+              <Text style={{ color: C.texto1, fontSize: 16, fontWeight: '500' }}>Ver a API →</Text>
+            </TouchableOpacity>
           </View>
 
-          {isDesktop && (
-            <View style={{ flex: 2 }}>
-              <FadeUp delay={180}>
-                <BrowserMockup />
-              </FadeUp>
+          {/* Platform pills */}
+          <View style={{ flexDirection: 'row', justifyContent: desk ? 'center' : 'flex-start', flexWrap: 'wrap', gap: 10 }}>
+            {['iOS nativo', 'Android nativo', 'Web browser', 'API REST pública'].map(p => (
+              <View key={p} style={{ backgroundColor: C.creme, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 }}>
+                <Text style={{ color: C.texto2, fontSize: 13 }}>{p}</Text>
+              </View>
+            ))}
+          </View>
+        </FadeUp>
+
+        {/* Mockup — abaixo no hero (desktop) */}
+        {desk && (
+          <FadeUp delay={320}>
+            <View style={{ marginTop: 80, maxWidth: 480, alignSelf: 'center' }}>
+              <BrowserMockup />
             </View>
-          )}
-        </View>
+          </FadeUp>
+        )}
       </Centered>
     </View>
   )
 }
 
-// ── App Section ───────────────────────────────────────────────────────────────
+// ── App Section — 6 cards estilo Wealthsimple ────────────────────────────────
 const APP_CARDS = [
-  { icon: 'home'         as const, titulo: 'Dashboard familiar',          desc: 'Saldo do mês, lançamentos recentes, carteiras e alertas de vencimento — tudo visível para toda a família em um feed compartilhado.' },
-  { icon: 'dollar-sign'  as const, titulo: 'Lançamentos e receitas',       desc: 'Registre despesas e receitas com categorias, vencimento e recorrência. Cada lançamento pode ser privado ou visível para a família inteira.' },
-  { icon: 'trending-up'  as const, titulo: 'Portfólio de investimentos',   desc: 'Acompanhe seu portfólio com cotações ao vivo via BRAPI. Métricas de P&L, NAV, IRR e TWR para quem leva os investimentos a sério.' },
-  { icon: 'target'       as const, titulo: 'Metas financeiras',            desc: 'Crie metas individuais ou familiares, com valor-alvo, prazo e progresso em tempo real. Todo mundo vê quanto falta para chegar lá.' },
-  { icon: 'message-circle' as const, titulo: 'Chat da família',            desc: 'Mensagens entre membros e notificações automáticas quando alguém registra um gasto. Transparência sem precisar perguntar nada.' },
-  { icon: 'bar-chart-2'  as const, titulo: 'Relatórios detalhados',        desc: 'Gráficos de despesas versus receitas por categoria e mês. Veja para onde o dinheiro da família está indo com clareza visual.' },
+  { num: '01', cat: 'Dashboard',     titulo: 'Dashboard familiar',        desc: 'Saldo do mês, lançamentos recentes, carteiras e alertas de vencimento — tudo visível para toda a família em um feed compartilhado.' },
+  { num: '02', cat: 'Lançamentos',   titulo: 'Lançamentos e receitas',    desc: 'Registre despesas e receitas com categorias, vencimento e recorrência. Cada lançamento pode ser privado ou visível para a família inteira.' },
+  { num: '03', cat: 'Investimentos', titulo: 'Portfólio de investimentos', desc: 'Acompanhe seu portfólio com cotações ao vivo via BRAPI. Métricas de P&L, NAV, IRR e TWR para quem leva os investimentos a sério.' },
+  { num: '04', cat: 'Metas',         titulo: 'Metas financeiras',          desc: 'Crie metas individuais ou familiares, com valor-alvo, prazo e progresso em tempo real. Todo mundo vê quanto falta para chegar lá.' },
+  { num: '05', cat: 'Chat',          titulo: 'Chat da família',            desc: 'Mensagens entre membros e notificações automáticas quando alguém registra um gasto. Transparência sem precisar perguntar nada.' },
+  { num: '06', cat: 'Relatórios',    titulo: 'Relatórios detalhados',     desc: 'Gráficos de despesas versus receitas por categoria e mês. Veja para onde o dinheiro da família está indo com clareza visual.' },
 ]
 
 function AppSection() {
   const { width } = useWindowDimensions()
-  const isDesktop = width >= 1024
-  const rows = [APP_CARDS.slice(0, 3), APP_CARDS.slice(3, 6)]
+  const desk = width >= 1024
   return (
-    <View style={{ backgroundColor: C.fundo2, paddingVertical: 96, borderTopWidth: 1, borderTopColor: C.borda }}>
+    <View style={{ backgroundColor: C.creme, paddingTop: 120, paddingBottom: 120 }}>
       <Centered>
         <FadeUp>
-          <Tag text="O Aplicativo" />
-          <Text style={{ fontSize: isDesktop ? 56 : 38, fontWeight: '800', color: C.texto1, letterSpacing: -1.5, lineHeight: isDesktop ? 64 : 46, marginBottom: 20 }}>
-            {'Tudo que a família precisa,\nnum só lugar'}
+          <Eyebrow text="O Aplicativo" />
+          <Text style={{ fontSize: desk ? 72 : 44, fontWeight: '900', color: C.texto1, letterSpacing: desk ? -3 : -1.5, lineHeight: desk ? 78 : 52, marginBottom: 24 }}>
+            {'Tudo que a família\nprecisa, num só lugar'}
           </Text>
-          <Text style={{ fontSize: 18, color: C.texto2, lineHeight: 32, marginBottom: 64, maxWidth: 560 }}>
+          <Text style={{ fontSize: 19, color: C.texto2, lineHeight: 33, marginBottom: 80, maxWidth: 560 }}>
             Do saldo do mês até o portfólio de investimentos — o Pactum entrega uma visão financeira completa, compartilhada em tempo real com quem importa.
           </Text>
         </FadeUp>
 
-        {isDesktop ? rows.map((row, ri) => (
-          <View key={ri} style={{ flexDirection: 'row', gap: 16, marginBottom: ri < rows.length - 1 ? 16 : 0 }}>
-            {row.map((card, ci) => (
-              <FadeUp key={card.titulo} delay={(ri * 3 + ci) * 70}>
-                <View style={{ flex: 1, backgroundColor: C.fundo, borderRadius: 20, padding: 32, borderWidth: 1, borderColor: C.borda }}>
-                  <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: C.verdeBg, borderWidth: 1, borderColor: C.verdeBd, alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                    <Feather name={card.icon} size={20} color={C.verde} />
-                  </View>
-                  <Text style={{ fontSize: 17, fontWeight: '700', color: C.texto1, marginBottom: 10, lineHeight: 24 }}>{card.titulo}</Text>
-                  <Text style={{ fontSize: 15, color: C.texto2, lineHeight: 26 }}>{card.desc}</Text>
-                </View>
-              </FadeUp>
+        {/* Grid 3x2 sem bordas — apenas fundo creme2 */}
+        {desk ? (
+          <>
+            {[APP_CARDS.slice(0, 3), APP_CARDS.slice(3, 6)].map((row, ri) => (
+              <View key={ri} style={{ flexDirection: 'row', gap: 3, marginBottom: 3 }}>
+                {row.map((card, ci) => (
+                  <FadeUp key={card.num} delay={(ri * 3 + ci) * 60}>
+                    <View style={{ flex: 1, backgroundColor: ri === 0 ? C.creme2 : C.branco, borderRadius: 20, padding: 40 }}>
+                      <Text style={{ fontSize: 11, color: C.texto3, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 20 }}>{card.cat}</Text>
+                      <Text style={{ fontSize: 22, fontWeight: '800', color: C.texto1, marginBottom: 14, lineHeight: 30, letterSpacing: -0.5 }}>{card.titulo}</Text>
+                      <Text style={{ fontSize: 15, color: C.texto2, lineHeight: 26 }}>{card.desc}</Text>
+                    </View>
+                  </FadeUp>
+                ))}
+              </View>
             ))}
-          </View>
-        )) : (
-          <View style={{ gap: 14 }}>
+          </>
+        ) : (
+          <View style={{ gap: 3 }}>
             {APP_CARDS.map((card, i) => (
-              <FadeUp key={card.titulo} delay={i * 60}>
-                <View style={{ backgroundColor: C.fundo, borderRadius: 20, padding: 28, borderWidth: 1, borderColor: C.borda }}>
-                  <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: C.verdeBg, borderWidth: 1, borderColor: C.verdeBd, alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
-                    <Feather name={card.icon} size={20} color={C.verde} />
-                  </View>
-                  <Text style={{ fontSize: 17, fontWeight: '700', color: C.texto1, marginBottom: 8, lineHeight: 24 }}>{card.titulo}</Text>
+              <FadeUp key={card.num} delay={i * 50}>
+                <View style={{ backgroundColor: i % 2 === 0 ? C.creme2 : C.branco, borderRadius: 20, padding: 32 }}>
+                  <Text style={{ fontSize: 11, color: C.texto3, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 14 }}>{card.cat}</Text>
+                  <Text style={{ fontSize: 20, fontWeight: '800', color: C.texto1, marginBottom: 10, lineHeight: 28 }}>{card.titulo}</Text>
                   <Text style={{ fontSize: 15, color: C.texto2, lineHeight: 26 }}>{card.desc}</Text>
                 </View>
               </FadeUp>
@@ -310,126 +305,105 @@ function AppSection() {
 
 // ── API Section ───────────────────────────────────────────────────────────────
 const API_DIFERENCIAIS = [
-  { titulo: 'Stateless',              desc: 'JWT puro, escala horizontal sem estado de sessão no servidor' },
-  { titulo: 'Multi-tenant',           desc: 'Dados completamente isolados por família — sem vazamentos entre contas' },
-  { titulo: 'Versionada',             desc: '/api/v1/ — novas versões sem quebrar clientes já integrados' },
-  { titulo: 'Rate limiting incluso',  desc: 'rack-attack bloqueia abusos e requisições excessivas por IP' },
-  { titulo: 'Queue assíncrona',       desc: 'Sidekiq + Redis — emails e notificações sem bloquear os requests' },
+  { titulo: 'Stateless',             desc: 'JWT puro, escala horizontal sem estado de sessão no servidor' },
+  { titulo: 'Multi-tenant',          desc: 'Dados completamente isolados por família — sem vazamentos entre contas' },
+  { titulo: 'Versionada',            desc: '/api/v1/ — novas versões sem quebrar clientes já integrados' },
+  { titulo: 'Rate limiting incluso', desc: 'rack-attack bloqueia abusos e requisições excessivas por IP' },
+  { titulo: 'Queue assíncrona',      desc: 'Sidekiq + Redis — emails e notificações sem bloquear os requests' },
 ]
-
 const API_ENDPOINTS = [
-  { method: 'GET',  path: '/saldo',         desc: 'Saldo mensal calculado' },
-  { method: 'GET',  path: '/lancamentos',   desc: 'Despesas e receitas' },
-  { method: 'POST', path: '/auth/login',    desc: 'Autenticação JWT' },
-  { method: 'POST', path: '/familias',      desc: 'Criar grupo familiar' },
-  { method: 'GET',  path: '/investimentos', desc: 'Portfólio completo' },
-  { method: 'GET',  path: '/metas',         desc: 'Metas financeiras' },
+  { method: 'GET',  path: '/saldo',          desc: 'Saldo mensal calculado' },
+  { method: 'GET',  path: '/lancamentos',    desc: 'Despesas e receitas' },
+  { method: 'POST', path: '/auth/login',     desc: 'Autenticação JWT' },
+  { method: 'POST', path: '/familias',       desc: 'Criar grupo familiar' },
+  { method: 'GET',  path: '/investimentos',  desc: 'Portfólio completo' },
+  { method: 'GET',  path: '/metas',          desc: 'Metas financeiras' },
 ]
+const mColor = (m: string) => m === 'GET' ? D.verde : '#7C9EE8'
 
-const methodColor = (m: string) => m === 'GET' ? '#3D9E6E' : '#7C9EE8'
-
-const CODE_LINES = [
-  { text: '# Saldo familiar do mês corrente',                              color: '#4A5568' },
-  { text: 'curl -X GET \\',                                                 color: '#E0E0E0' },
-  { text: '  "https://api.pactum.app/v1/saldo\\',                          color: '#C8BFA8' },
-  { text: '   ?escopo=familia&mes=5&ano=2026" \\',                          color: '#C8BFA8' },
-  { text: '  -H "Authorization: Bearer eyJhbGci..."',                       color: '#7C9EE8' },
-  { text: '',                                                                color: '#000' },
-  { text: '{',                                                               color: '#E0E0E0' },
-  { text: '  "saldo":           3570.10,',                                  color: D.verde   },
-  { text: '  "total_receitas":  5800.00,',                                  color: D.verde   },
-  { text: '  "total_gastos":    2229.90,',                                  color: D.verde   },
-  { text: '  "positivo":        true,',                                     color: D.verde   },
-  { text: '  "mes": 5, "ano":   2026',                                      color: D.verde   },
-  { text: '}',                                                               color: '#E0E0E0' },
+const CODE: { text: string; color: string }[] = [
+  { text: '# Saldo familiar do mês corrente',                     color: '#3D4A3A' },
+  { text: 'curl -X GET \\',                                        color: '#DADADA' },
+  { text: '  "https://api.pactum.app/v1/saldo\\',                 color: '#C8BFA8' },
+  { text: '   ?escopo=familia&mes=5&ano=2026" \\',                 color: '#C8BFA8' },
+  { text: '  -H "Authorization: Bearer eyJhbGci..."',              color: '#7C9EE8' },
+  { text: '',                                                       color: '#000'    },
+  { text: '{',                                                      color: '#DADADA' },
+  { text: '  "saldo":          3570.10,',                          color: D.verde   },
+  { text: '  "total_receitas": 5800.00,',                          color: D.verde   },
+  { text: '  "total_gastos":   2229.90,',                          color: D.verde   },
+  { text: '  "positivo":       true,',                             color: D.verde   },
+  { text: '  "mes": 5,  "ano": 2026',                              color: D.verde   },
+  { text: '}',                                                      color: '#DADADA' },
 ]
 
 function ApiSection() {
   const { width } = useWindowDimensions()
-  const isDesktop = width >= 1024
+  const desk = width >= 1024
   return (
-    <View style={{ backgroundColor: D.fundo, paddingVertical: 96 }}>
+    <View style={{ backgroundColor: D.fundo, paddingTop: 120, paddingBottom: 120 }}>
       <Centered>
         <FadeUp>
-          {/* Tag + Header */}
-          <Tag text="API Pactum" dark />
-          <View style={{ marginBottom: 72, maxWidth: 620 }}>
-            <Text style={{ fontSize: isDesktop ? 56 : 38, fontWeight: '800', color: '#FFFFFF', letterSpacing: -1.5, lineHeight: isDesktop ? 64 : 46, marginBottom: 20 }}>
-              {'Uma API financeira pronta\npara você integrar'}
-            </Text>
-            <Text style={{ fontSize: 18, color: D.dim, lineHeight: 30 }}>
-              A API REST do Pactum expõe toda a lógica do app para qualquer desenvolvedor. Autenticação, grupos, lançamentos, investimentos e metas — sem precisar construir nada do zero.
-            </Text>
-          </View>
+          <Eyebrow text="API Pactum" light />
+
+          {/* Título grande — estilo Wealthsimple */}
+          <Text style={{ fontSize: desk ? 72 : 44, fontWeight: '900', color: '#FFFFFF', letterSpacing: desk ? -3 : -1.5, lineHeight: desk ? 78 : 52, marginBottom: 24, maxWidth: 700 }}>
+            {'Uma API financeira pronta\npara você integrar'}
+          </Text>
+          <Text style={{ fontSize: 19, color: D.dim, lineHeight: 32, marginBottom: 80, maxWidth: 560 }}>
+            A API REST do Pactum expõe toda a lógica do app para qualquer desenvolvedor. Autenticação, grupos, lançamentos, investimentos e metas — sem precisar construir nada do zero.
+          </Text>
 
           {/* Duas colunas */}
-          <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: 56 }}>
+          <View style={{ flexDirection: desk ? 'row' : 'column', gap: 64 }}>
 
-            {/* Coluna esquerda: diferenciais + CTA */}
+            {/* Esquerda: diferenciais */}
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 11, color: D.dim, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 2.5, textTransform: 'uppercase', color: D.dim, marginBottom: 4 }}>
                 Diferenciais técnicos
               </Text>
-              <Divisor dark />
-              <View style={{ marginBottom: 48 }}>
-                {API_DIFERENCIAIS.map(d => (
-                  <View key={d.titulo} style={{
-                    flexDirection: 'row', alignItems: 'flex-start', gap: 16,
-                    paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: D.borda,
-                  }}>
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: D.verde, marginTop: 5, flexShrink: 0 }} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '600', marginBottom: 4 }}>{d.titulo}</Text>
-                      <Text style={{ color: D.dim, fontSize: 13, lineHeight: 21 }}>{d.desc}</Text>
-                    </View>
+              <View style={{ height: 1, backgroundColor: D.dim2, marginBottom: 0 }} />
+              {API_DIFERENCIAIS.map(d => (
+                <View key={d.titulo} style={{ paddingVertical: 24, borderBottomWidth: 1, borderBottomColor: D.dim2, flexDirection: 'row', alignItems: 'flex-start', gap: 20 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: D.verde, marginTop: 6, flexShrink: 0 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700', marginBottom: 5 }}>{d.titulo}</Text>
+                    <Text style={{ color: D.dim, fontSize: 14, lineHeight: 22 }}>{d.desc}</Text>
                   </View>
-                ))}
-              </View>
-              <TouchableOpacity style={{
-                backgroundColor: D.verde, paddingHorizontal: 28, paddingVertical: 14,
-                borderRadius: 10, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8,
-              }}>
+                </View>
+              ))}
+              <TouchableOpacity style={{ marginTop: 40, backgroundColor: D.verde, paddingHorizontal: 28, paddingVertical: 15, borderRadius: 10, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '700' }}>Explorar a API</Text>
-                <Text style={{ color: '#FFF', fontSize: 15 }}>→</Text>
+                <Text style={{ color: '#FFF' }}>→</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Coluna direita: terminal + endpoints */}
+            {/* Direita: terminal + endpoints */}
             <View style={{ flex: 1 }}>
               {/* Terminal */}
-              <View style={{ backgroundColor: '#0E0E0E', borderRadius: 16, borderWidth: 1, borderColor: D.borda, overflow: 'hidden', marginBottom: 24 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: D.borda, backgroundColor: '#111' }}>
-                  {['#FF5F57','#FFBD2E','#28CA41'].map(c => (
-                    <View key={c} style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c }} />
-                  ))}
-                  <Text style={{ color: D.dim, fontSize: 11, marginLeft: 8, fontFamily: 'monospace' }}>
-                    GET /api/v1/saldo
-                  </Text>
+              <View style={{ backgroundColor: '#0D0D0D', borderRadius: 16, overflow: 'hidden', marginBottom: 24 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 18, paddingVertical: 13, backgroundColor: '#111', borderBottomWidth: 1, borderBottomColor: D.borda }}>
+                  {['#FF5F57','#FFBD2E','#28CA41'].map(c => <View key={c} style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c }} />)}
+                  <Text style={{ color: D.dim, fontSize: 11, marginLeft: 8, fontFamily: 'monospace' }}>GET /api/v1/saldo</Text>
                 </View>
-                <View style={{ padding: 24 }}>
-                  {CODE_LINES.map((l, i) => (
-                    <Text key={i} style={{ color: l.color, fontSize: 13, fontFamily: 'monospace', lineHeight: 22 }}>
-                      {l.text}
-                    </Text>
+                <View style={{ padding: 28 }}>
+                  {CODE.map((l, i) => (
+                    <Text key={i} style={{ color: l.color, fontSize: 13, fontFamily: 'monospace', lineHeight: 23 }}>{l.text}</Text>
                   ))}
                 </View>
               </View>
 
               {/* Endpoints */}
-              <Text style={{ fontSize: 11, color: D.dim, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 14 }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 2.5, textTransform: 'uppercase', color: D.dim, marginBottom: 14 }}>
                 Endpoints disponíveis
               </Text>
-              <View style={{ gap: 8 }}>
+              <View style={{ gap: 6 }}>
                 {API_ENDPOINTS.map(ep => (
-                  <View key={ep.path} style={{
-                    flexDirection: 'row', alignItems: 'center', gap: 12,
-                    backgroundColor: D.card, borderRadius: 10, borderWidth: 1, borderColor: D.borda,
-                    paddingHorizontal: 16, paddingVertical: 12,
-                  }}>
-                    <View style={{ backgroundColor: methodColor(ep.method) + '1A', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, minWidth: 50, alignItems: 'center' }}>
-                      <Text style={{ color: methodColor(ep.method), fontSize: 11, fontWeight: '700', fontFamily: 'monospace' }}>{ep.method}</Text>
+                  <View key={ep.path} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: D.card, borderRadius: 10, paddingHorizontal: 18, paddingVertical: 13 }}>
+                    <View style={{ backgroundColor: mColor(ep.method) + '1A', borderRadius: 6, paddingHorizontal: 9, paddingVertical: 3, minWidth: 52, alignItems: 'center' }}>
+                      <Text style={{ color: mColor(ep.method), fontSize: 11, fontWeight: '700', fontFamily: 'monospace' }}>{ep.method}</Text>
                     </View>
-                    <Text style={{ color: '#E0E0E0', fontSize: 13, fontFamily: 'monospace', flex: 1 }}>{ep.path}</Text>
+                    <Text style={{ color: '#DADADA', fontSize: 13, fontFamily: 'monospace', flex: 1 }}>{ep.path}</Text>
                     <Text style={{ color: D.dim, fontSize: 12 }}>{ep.desc}</Text>
                   </View>
                 ))}
@@ -443,40 +417,38 @@ function ApiSection() {
 }
 
 // ── Stack Section ─────────────────────────────────────────────────────────────
-const STACK_COLS = [
-  { categoria: 'Frontend',          items: ['React Native + Expo', 'TypeScript', 'Zustand', 'NativeWind'] },
-  { categoria: 'Backend',           items: ['Ruby on Rails 7.2', 'PostgreSQL', 'Sidekiq + Redis', 'Puma'] },
-  { categoria: 'Auth & Segurança',  items: ['JWT HS256', 'bcrypt', 'rack-attack', 'SSL + CORS'] },
-  { categoria: 'Infraestrutura',    items: ['Railway (CI/CD)', 'EAS Build', 'Docker-ready', 'BRAPI'] },
+const STACK = [
+  { cat: 'Frontend',         items: ['React Native + Expo', 'TypeScript', 'Zustand', 'NativeWind'] },
+  { cat: 'Backend',          items: ['Ruby on Rails 7.2', 'PostgreSQL', 'Sidekiq + Redis', 'Puma'] },
+  { cat: 'Auth & Segurança', items: ['JWT HS256', 'bcrypt', 'rack-attack', 'SSL + CORS'] },
+  { cat: 'Infraestrutura',   items: ['Railway (CI/CD)', 'EAS Build', 'Docker-ready', 'BRAPI'] },
 ]
 
 function StackSection() {
   const { width } = useWindowDimensions()
-  const isDesktop = width >= 1024
+  const desk = width >= 1024
   return (
-    <View style={{ backgroundColor: C.fundo, paddingVertical: 96, borderTopWidth: 1, borderTopColor: C.borda }}>
+    <View style={{ backgroundColor: C.branco, paddingTop: 120, paddingBottom: 120 }}>
       <Centered>
         <FadeUp>
-          <Tag text="Stack Técnica" />
-          <Text style={{ fontSize: isDesktop ? 56 : 38, fontWeight: '800', color: C.texto1, letterSpacing: -1.5, lineHeight: isDesktop ? 64 : 46, marginBottom: 20 }}>
+          <Eyebrow text="Stack Técnica" />
+          <Text style={{ fontSize: desk ? 72 : 44, fontWeight: '900', color: C.texto1, letterSpacing: desk ? -3 : -1.5, lineHeight: desk ? 78 : 52, marginBottom: 24 }}>
             {'Construído com tecnologia\nde produção real'}
           </Text>
-          <Text style={{ fontSize: 18, color: C.texto2, lineHeight: 32, marginBottom: 64, maxWidth: 540 }}>
+          <Text style={{ fontSize: 19, color: C.texto2, lineHeight: 33, marginBottom: 80, maxWidth: 540 }}>
             Cada tecnologia foi escolhida por um motivo. Código compartilhado entre iOS, Android e Web. Backend stateless que escala. Infraestrutura que se atualiza sozinha.
           </Text>
         </FadeUp>
-        <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: 16 }}>
-          {STACK_COLS.map((col, i) => (
-            <FadeUp key={col.categoria} delay={i * 80}>
-              <View style={{ flex: 1, backgroundColor: C.fundo2, borderRadius: 16, padding: 28, borderWidth: 1, borderColor: C.borda }}>
-                <Text style={{ fontSize: 11, color: C.verde, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 20, fontWeight: '600' }}>
-                  {col.categoria}
-                </Text>
-                <View style={{ gap: 12 }}>
+        <View style={{ flexDirection: desk ? 'row' : 'column', gap: 3 }}>
+          {STACK.map((col, i) => (
+            <FadeUp key={col.cat} delay={i * 70}>
+              <View style={{ flex: 1, backgroundColor: C.creme, borderRadius: 20, padding: 36 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: C.verde, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 24 }}>{col.cat}</Text>
+                <View style={{ gap: 14 }}>
                   {col.items.map(item => (
-                    <View key={item} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                      <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: C.borda }} />
-                      <Text style={{ color: C.texto1, fontSize: 14, fontWeight: '500' }}>{item}</Text>
+                    <View key={item} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: C.borda }} />
+                      <Text style={{ color: C.texto1, fontSize: 15, fontWeight: '500' }}>{item}</Text>
                     </View>
                   ))}
                 </View>
@@ -490,54 +462,53 @@ function StackSection() {
 }
 
 // ── Security Section ──────────────────────────────────────────────────────────
-const SECURITY_ITEMS = [
-  { icon: 'clock'   as const, titulo: 'JWT com expiração',       desc: 'Access token de 1h, refresh de 30 dias. Sessões stateless.' },
-  { icon: 'lock'    as const, titulo: 'bcrypt nas senhas',        desc: 'Nenhuma senha armazenada em texto puro.' },
-  { icon: 'shield'  as const, titulo: 'Rate limiting',            desc: 'rack-attack bloqueia abusos por IP automaticamente.' },
-  { icon: 'wifi'    as const, titulo: 'SSL obrigatório',          desc: 'Todo tráfego em produção é criptografado.' },
-  { icon: 'globe'   as const, titulo: 'CORS configurável',        desc: 'Aceita apenas origens autorizadas em produção.' },
-  { icon: 'key'     as const, titulo: 'Secrets criptografados',   desc: 'Rails credentials — nenhum segredo exposto no código.' },
+const SEC = [
+  { icon: 'clock'   as const, titulo: 'JWT com expiração',      desc: 'Access token de 1h, refresh de 30 dias. Sessões stateless.' },
+  { icon: 'lock'    as const, titulo: 'bcrypt nas senhas',       desc: 'Nenhuma senha armazenada em texto puro.' },
+  { icon: 'shield'  as const, titulo: 'Rate limiting',           desc: 'rack-attack bloqueia abusos por IP automaticamente.' },
+  { icon: 'wifi'    as const, titulo: 'SSL obrigatório',         desc: 'Todo tráfego em produção é criptografado.' },
+  { icon: 'globe'   as const, titulo: 'CORS configurável',       desc: 'Aceita apenas origens autorizadas em produção.' },
+  { icon: 'key'     as const, titulo: 'Secrets criptografados',  desc: 'Rails credentials — nenhum segredo exposto no código.' },
 ]
 
 function SecuritySection() {
   const { width } = useWindowDimensions()
-  const isDesktop = width >= 1024
-  const rows = [SECURITY_ITEMS.slice(0, 3), SECURITY_ITEMS.slice(3, 6)]
+  const desk = width >= 1024
   return (
-    <View style={{ backgroundColor: C.fundo2, paddingVertical: 96, borderTopWidth: 1, borderTopColor: C.borda }}>
+    <View style={{ backgroundColor: C.creme, paddingTop: 120, paddingBottom: 120 }}>
       <Centered>
         <FadeUp>
-          <Tag text="Segurança" />
-          <Text style={{ fontSize: isDesktop ? 56 : 38, fontWeight: '800', color: C.texto1, letterSpacing: -1.5, lineHeight: isDesktop ? 64 : 46, marginBottom: 64 }}>
+          <Eyebrow text="Segurança" />
+          <Text style={{ fontSize: desk ? 72 : 44, fontWeight: '900', color: C.texto1, letterSpacing: desk ? -3 : -1.5, lineHeight: desk ? 78 : 52, marginBottom: 80 }}>
             {'Seus dados protegidos\npor padrão'}
           </Text>
         </FadeUp>
-        {isDesktop ? rows.map((row, ri) => (
-          <View key={ri} style={{ flexDirection: 'row', gap: 16, marginBottom: ri < rows.length - 1 ? 16 : 0 }}>
-            {row.map((item, ci) => (
-              <FadeUp key={item.titulo} delay={(ri * 3 + ci) * 60}>
-                <View style={{ flex: 1, backgroundColor: C.fundo, borderRadius: 16, padding: 28, borderWidth: 1, borderColor: C.borda, flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: C.verdeBg, borderWidth: 1, borderColor: C.verdeBd, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Feather name={item.icon} size={18} color={C.verde} />
+        {desk ? (
+          [SEC.slice(0, 3), SEC.slice(3, 6)].map((row, ri) => (
+            <View key={ri} style={{ flexDirection: 'row', gap: 3, marginBottom: 3 }}>
+              {row.map((item, ci) => (
+                <FadeUp key={item.titulo} delay={(ri * 3 + ci) * 55}>
+                  <View style={{ flex: 1, backgroundColor: C.branco, borderRadius: 20, padding: 36 }}>
+                    <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: C.verdeBg, alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                      <Feather name={item.icon} size={20} color={C.verde} />
+                    </View>
+                    <Text style={{ color: C.texto1, fontSize: 17, fontWeight: '700', marginBottom: 8, lineHeight: 24 }}>{item.titulo}</Text>
+                    <Text style={{ color: C.texto2, fontSize: 14, lineHeight: 23 }}>{item.desc}</Text>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: C.texto1, fontSize: 15, fontWeight: '700', marginBottom: 6 }}>{item.titulo}</Text>
-                    <Text style={{ color: C.texto2, fontSize: 14, lineHeight: 22 }}>{item.desc}</Text>
-                  </View>
-                </View>
-              </FadeUp>
-            ))}
-          </View>
-        )) : (
-          <View style={{ gap: 12 }}>
-            {SECURITY_ITEMS.map((item, i) => (
+                </FadeUp>
+              ))}
+            </View>
+          ))
+        ) : (
+          <View style={{ gap: 3 }}>
+            {SEC.map((item, i) => (
               <FadeUp key={item.titulo} delay={i * 50}>
-                <View style={{ backgroundColor: C.fundo, borderRadius: 16, padding: 24, borderWidth: 1, borderColor: C.borda, flexDirection: 'row', alignItems: 'flex-start', gap: 14 }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: C.verdeBg, borderWidth: 1, borderColor: C.verdeBd, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Feather name={item.icon} size={18} color={C.verde} />
+                <View style={{ backgroundColor: C.branco, borderRadius: 20, padding: 28, flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
+                  <View style={{ width: 42, height: 42, borderRadius: 11, backgroundColor: C.verdeBg, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Feather name={item.icon} size={19} color={C.verde} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: C.texto1, fontSize: 15, fontWeight: '700', marginBottom: 5 }}>{item.titulo}</Text>
+                    <Text style={{ color: C.texto1, fontSize: 16, fontWeight: '700', marginBottom: 6 }}>{item.titulo}</Text>
                     <Text style={{ color: C.texto2, fontSize: 14, lineHeight: 22 }}>{item.desc}</Text>
                   </View>
                 </View>
@@ -553,103 +524,67 @@ function SecuritySection() {
 // ── Business Models ───────────────────────────────────────────────────────────
 const PLANOS = [
   {
-    tag:      'B2C · Para famílias',
-    preco:    'R$ 9,90',
-    periodo:  '/mês',
-    titulo:   'SaaS Direto',
-    desc:     'O app Pactum como assinatura para famílias que querem controle financeiro real, sem planilha.',
-    items:    ['Grupo familiar ilimitado', 'Relatórios e gráficos', 'Portfólio de investimentos', 'Chat e feed em tempo real', 'iOS, Android e Web'],
-    destaque: false,
-    cta:      'Começar grátis',
-    acao:     () => router.push('/register'),
+    tag: 'B2C · Para famílias', preco: 'R$ 9,90', periodo: '/mês',
+    titulo: 'SaaS Direto', destaque: false,
+    desc: 'O app Pactum como assinatura para famílias que querem controle financeiro real, sem planilha.',
+    items: ['Grupo familiar ilimitado', 'Relatórios e gráficos', 'Portfólio de investimentos', 'Chat e feed em tempo real', 'iOS, Android e Web'],
+    cta: 'Começar grátis', acao: () => router.push('/register'),
   },
   {
-    tag:      'B2D · Para desenvolvedores',
-    preco:    'por req',
-    periodo:  ' ou mês',
-    titulo:   'API como Produto',
-    desc:     'Venda acesso à API para devs que querem construir apps financeiros sem reinventar a roda.',
-    items:    ['Autenticação pronta', 'Grupos e permissões', 'Cálculo de saldo automático', 'Investimentos e metas', 'Planos free, pro e enterprise'],
-    destaque: true,
-    cta:      'Explorar a API →',
-    acao:     () => {},
+    tag: 'B2D · Para desenvolvedores', preco: 'por req', periodo: ' ou mês',
+    titulo: 'API como Produto', destaque: true,
+    desc: 'Venda acesso à API para devs que querem construir apps financeiros sem reinventar a roda.',
+    items: ['Autenticação pronta', 'Grupos e permissões', 'Cálculo de saldo automático', 'Investimentos e metas', 'Planos free, pro e enterprise'],
+    cta: 'Explorar a API →', acao: () => {},
   },
   {
-    tag:      'B2B · Para empresas',
-    preco:    'Custom',
-    periodo:  '',
-    titulo:   'White-label',
-    desc:     'A solução completa com sua marca. Para fintechs, bancos digitais e apps de RH que querem finanças familiares como feature.',
-    items:    ['App com sua identidade visual', 'API exclusiva por cliente', 'SLA garantido', 'Suporte dedicado', 'Integrações customizadas'],
-    destaque: false,
-    cta:      'Entrar em contato',
-    acao:     () => {},
+    tag: 'B2B · Para empresas', preco: 'Custom', periodo: '',
+    titulo: 'White-label', destaque: false,
+    desc: 'A solução completa com sua marca. Para fintechs, bancos digitais e apps de RH.',
+    items: ['App com sua identidade visual', 'API exclusiva por cliente', 'SLA garantido', 'Suporte dedicado', 'Integrações customizadas'],
+    cta: 'Entrar em contato', acao: () => {},
   },
 ]
 
 function BusinessSection() {
   const { width } = useWindowDimensions()
-  const isDesktop = width >= 1024
+  const desk = width >= 1024
   return (
-    <View style={{ backgroundColor: C.fundo, paddingVertical: 96, borderTopWidth: 1, borderTopColor: C.borda }}>
+    <View style={{ backgroundColor: C.branco, paddingTop: 120, paddingBottom: 120 }}>
       <Centered>
         <FadeUp>
-          <Tag text="Modelos de Negócio" />
-          <Text style={{ fontSize: isDesktop ? 56 : 38, fontWeight: '800', color: C.texto1, letterSpacing: -1.5, lineHeight: isDesktop ? 64 : 46, marginBottom: 20 }}>
+          <Eyebrow text="Modelos de Negócio" />
+          <Text style={{ fontSize: desk ? 72 : 44, fontWeight: '900', color: C.texto1, letterSpacing: desk ? -3 : -1.5, lineHeight: desk ? 78 : 52, marginBottom: 20 }}>
             {'Três caminhos para gerar\nvalor com o Pactum'}
           </Text>
-          <Text style={{ fontSize: 18, color: C.texto2, lineHeight: 32, marginBottom: 64, maxWidth: 480 }}>
+          <Text style={{ fontSize: 19, color: C.texto2, lineHeight: 33, marginBottom: 80, maxWidth: 480 }}>
             A infraestrutura está pronta. A escolha de como monetizar é sua.
           </Text>
         </FadeUp>
-        <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: 20 }}>
+        <View style={{ flexDirection: desk ? 'row' : 'column', gap: 3 }}>
           {PLANOS.map((p, i) => (
-            <FadeUp key={p.titulo} delay={i * 100}>
-              <View style={{
-                flex: 1,
-                backgroundColor: p.destaque ? C.texto1 : C.fundo2,
-                borderRadius: 24, padding: 36,
-                borderWidth: 1, borderColor: p.destaque ? C.texto1 : C.borda,
-              }}>
+            <FadeUp key={p.titulo} delay={i * 80}>
+              <View style={{ flex: 1, backgroundColor: p.destaque ? C.texto1 : C.creme, borderRadius: 24, padding: desk ? 44 : 36 }}>
                 {p.destaque && (
-                  <View style={{ alignSelf: 'flex-start', backgroundColor: D.verde, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 20 }}>
+                  <View style={{ alignSelf: 'flex-start', backgroundColor: D.verde, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, marginBottom: 24 }}>
                     <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '700' }}>Maior potencial</Text>
                   </View>
                 )}
-                <Text style={{ fontSize: 11, color: p.destaque ? '#666' : C.texto2, letterSpacing: 0.8, marginBottom: 20 }}>
-                  {p.tag}
-                </Text>
-                <Text style={{ fontSize: 42, fontWeight: '800', color: p.destaque ? '#FFF' : C.texto1, letterSpacing: -1.5 }}>
-                  {p.preco}
-                </Text>
-                <Text style={{ fontSize: 14, color: p.destaque ? '#666' : C.texto2, marginBottom: 24 }}>
-                  {p.periodo}
-                </Text>
-                <Text style={{ fontSize: 20, fontWeight: '700', color: p.destaque ? '#FFF' : C.texto1, marginBottom: 10 }}>
-                  {p.titulo}
-                </Text>
-                <Text style={{ fontSize: 14, color: p.destaque ? '#999' : C.texto2, lineHeight: 24, marginBottom: 28 }}>
-                  {p.desc}
-                </Text>
-                <View style={{ gap: 10, marginBottom: 32 }}>
+                <Text style={{ fontSize: 11, color: p.destaque ? '#555' : C.texto3, letterSpacing: 1, marginBottom: 20 }}>{p.tag}</Text>
+                <Text style={{ fontSize: 46, fontWeight: '900', color: p.destaque ? '#FFF' : C.texto1, letterSpacing: -2 }}>{p.preco}</Text>
+                <Text style={{ fontSize: 14, color: p.destaque ? '#555' : C.texto2, marginBottom: 28 }}>{p.periodo}</Text>
+                <Text style={{ fontSize: 22, fontWeight: '800', color: p.destaque ? '#FFF' : C.texto1, marginBottom: 12, letterSpacing: -0.5 }}>{p.titulo}</Text>
+                <Text style={{ fontSize: 15, color: p.destaque ? '#888' : C.texto2, lineHeight: 25, marginBottom: 32 }}>{p.desc}</Text>
+                <View style={{ gap: 12, marginBottom: 36 }}>
                   {p.items.map(item => (
-                    <View key={item} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
-                      <Text style={{ color: D.verde, fontSize: 14, lineHeight: 22 }}>✓</Text>
-                      <Text style={{ color: p.destaque ? '#CCC' : C.texto2, fontSize: 14, lineHeight: 22, flex: 1 }}>{item}</Text>
+                    <View key={item} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
+                      <Text style={{ color: D.verde, fontSize: 15, lineHeight: 24 }}>✓</Text>
+                      <Text style={{ color: p.destaque ? '#CCCCCC' : C.texto2, fontSize: 14, lineHeight: 24, flex: 1 }}>{item}</Text>
                     </View>
                   ))}
                 </View>
-                <TouchableOpacity
-                  onPress={p.acao}
-                  style={{
-                    backgroundColor: p.destaque ? D.verde : 'transparent',
-                    borderWidth: p.destaque ? 0 : 1, borderColor: C.borda,
-                    borderRadius: 12, paddingVertical: 14, alignItems: 'center',
-                  }}
-                >
-                  <Text style={{ color: p.destaque ? '#FFF' : C.texto1, fontSize: 15, fontWeight: '700' }}>
-                    {p.cta}
-                  </Text>
+                <TouchableOpacity onPress={p.acao} style={{ backgroundColor: p.destaque ? D.verde : 'transparent', borderWidth: p.destaque ? 0 : 1.5, borderColor: C.borda, borderRadius: 12, paddingVertical: 15, alignItems: 'center' }}>
+                  <Text style={{ color: p.destaque ? '#FFF' : C.texto1, fontSize: 15, fontWeight: '700' }}>{p.cta}</Text>
                 </TouchableOpacity>
               </View>
             </FadeUp>
@@ -663,23 +598,23 @@ function BusinessSection() {
 // ── CTA Final ─────────────────────────────────────────────────────────────────
 function CtaFinalSection() {
   const { width } = useWindowDimensions()
-  const isDesktop = width >= 768
+  const desk = width >= 768
   return (
-    <View style={{ backgroundColor: D.fundo, paddingVertical: 96, borderTopWidth: 1, borderTopColor: D.borda }}>
+    <View style={{ backgroundColor: D.fundo, paddingTop: 120, paddingBottom: 120 }}>
       <Centered>
         <FadeUp>
-          <Text style={{ fontSize: isDesktop ? 56 : 38, fontWeight: '800', color: '#FFFFFF', letterSpacing: -2, lineHeight: isDesktop ? 64 : 48, marginBottom: 20, textAlign: 'center', alignSelf: 'center', maxWidth: 600 }}>
+          <Text style={{ fontSize: desk ? 80 : 48, fontWeight: '900', color: '#FFFFFF', letterSpacing: desk ? -3.5 : -2, lineHeight: desk ? 88 : 56, marginBottom: 24, textAlign: 'center', alignSelf: 'center', maxWidth: 680 }}>
             Pronto para colocar o Pactum em produção?
           </Text>
-          <Text style={{ fontSize: 18, color: D.dim, lineHeight: 30, textAlign: 'center', marginBottom: 48, maxWidth: 480, alignSelf: 'center' }}>
+          <Text style={{ fontSize: 19, color: D.dim, lineHeight: 32, textAlign: 'center', marginBottom: 56, maxWidth: 480, alignSelf: 'center' }}>
             Conheça a documentação, explore os endpoints ou entre em contato para falar sobre integração ou parceria comercial.
           </Text>
-          <View style={{ flexDirection: isDesktop ? 'row' : 'column', gap: 14, justifyContent: 'center', alignItems: 'center' }}>
-            <TouchableOpacity style={{ backgroundColor: D.verde, paddingHorizontal: 32, paddingVertical: 16, borderRadius: 12 }}>
+          <View style={{ flexDirection: desk ? 'row' : 'column', gap: 14, justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableOpacity style={{ backgroundColor: D.verde, paddingHorizontal: 36, paddingVertical: 17, borderRadius: 12 }}>
               <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '700' }}>Explorar a API →</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ borderWidth: 1, borderColor: '#333', paddingHorizontal: 32, paddingVertical: 16, borderRadius: 12 }}>
-              <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '500' }}>Entrar em contato</Text>
+            <TouchableOpacity style={{ borderWidth: 1, borderColor: D.dim2, paddingHorizontal: 36, paddingVertical: 17, borderRadius: 12 }}>
+              <Text style={{ color: '#FFF', fontSize: 16 }}>Entrar em contato</Text>
             </TouchableOpacity>
           </View>
         </FadeUp>
@@ -691,16 +626,14 @@ function CtaFinalSection() {
 // ── Footer ────────────────────────────────────────────────────────────────────
 function LandingFooter() {
   const { width } = useWindowDimensions()
-  const isDesktop = width >= 768
+  const desk = width >= 768
   return (
-    <View style={{ paddingVertical: 40, backgroundColor: D.fundo, borderTopWidth: 1, borderTopColor: D.borda }}>
+    <View style={{ paddingVertical: 44, backgroundColor: D.fundo, borderTopWidth: 1, borderTopColor: D.borda }}>
       <Centered>
-        <View style={{ flexDirection: isDesktop ? 'row' : 'column', alignItems: isDesktop ? 'center' : 'flex-start', justifyContent: 'space-between', gap: 20 }}>
-          <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800', letterSpacing: 3.5 }}>PACTUM</Text>
-          <View style={{ flexDirection: 'row', gap: 28, flexWrap: 'wrap' }}>
-            <Text style={{ color: D.dim, fontSize: 13 }}>Recursos</Text>
-            <Text style={{ color: D.dim, fontSize: 13 }}>API</Text>
-            <Text style={{ color: D.dim, fontSize: 13 }}>Sobre</Text>
+        <View style={{ flexDirection: desk ? 'row' : 'column', alignItems: desk ? 'center' : 'flex-start', justifyContent: 'space-between', gap: 20 }}>
+          <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 4 }}>PACTUM</Text>
+          <View style={{ flexDirection: 'row', gap: 32, flexWrap: 'wrap' }}>
+            {['Recursos', 'API', 'Sobre'].map(l => <Text key={l} style={{ color: D.dim, fontSize: 13 }}>{l}</Text>)}
             <TouchableOpacity onPress={() => router.push('/login')}>
               <Text style={{ color: D.dim, fontSize: 13 }}>Entrar</Text>
             </TouchableOpacity>
@@ -717,8 +650,8 @@ function LandingFooter() {
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function Landing() {
   return (
-    <View style={{ flex: 1, backgroundColor: C.fundo }}>
-      <StatusBar barStyle="dark-content" backgroundColor={C.fundo} />
+    <View style={{ flex: 1, backgroundColor: C.branco }}>
+      <StatusBar barStyle="dark-content" backgroundColor={C.branco} />
       <LandingHeader />
       <ScrollView showsVerticalScrollIndicator={false}>
         <HeroSection />
