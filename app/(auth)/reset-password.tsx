@@ -46,7 +46,8 @@ export default function ResetPassword() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar barStyle="dark-content" backgroundColor={colors.bg.primary} />
-      <View style={{ flex: 1, paddingHorizontal: 28, justifyContent: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ width: '100%', maxWidth: 420, paddingHorizontal: 28 }}>
         <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 32 }}>
           <Text style={{ color: colors.accent.main, fontSize: 14 }}>← Voltar</Text>
         </TouchableOpacity>
@@ -99,6 +100,7 @@ export default function ResetPassword() {
                 </Text>
             }
           </TouchableOpacity>
+        </View>
         </View>
       </View>
     </KeyboardAvoidingView>

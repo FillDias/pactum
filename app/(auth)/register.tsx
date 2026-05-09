@@ -37,7 +37,8 @@ export default function Register() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={{ flex: 1, paddingHorizontal: 28, justifyContent: 'center' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: '100%', maxWidth: 420, paddingHorizontal: 28 }}>
           <View style={{ marginBottom: 40 }}>
             <Text style={{
               fontSize: 36,
@@ -151,6 +152,7 @@ export default function Register() {
                 <Text style={{ color: colors.accent.main }}>Entrar</Text>
               </Text>
             </TouchableOpacity>
+          </View>
           </View>
         </View>
       </ScrollView>
