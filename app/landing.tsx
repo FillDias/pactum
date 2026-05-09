@@ -5,6 +5,7 @@ import {
 } from 'react-native'
 import { router } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
+import HeroCanvas from '../components/HeroCanvas'
 
 // ── Paleta ────────────────────────────────────────────────────────────────────
 const C = {
@@ -137,12 +138,21 @@ function BrowserMockup() {
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
-function LandingHeader() {
+function LandingHeader({ scrollY }: { scrollY: Animated.Value }) {
   const { width } = useWindowDimensions()
   const desk = width >= 768
+
+  const bgOpacity = scrollY.interpolate({ inputRange: [0, 90], outputRange: [0, 1], extrapolate: 'clamp' })
+  const borderOpacity = scrollY.interpolate({ inputRange: [60, 90], outputRange: [0, 1], extrapolate: 'clamp' })
+
   return (
-    <View style={{ height: 66, backgroundColor: C.branco, borderBottomWidth: 1, borderBottomColor: C.borda, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={{ width: '100%', maxWidth: MAX_W, paddingHorizontal: desk ? 56 : 24, flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 66, zIndex: 100, justifyContent: 'center' }}>
+      {/* Fundo que aparece ao scrollar */}
+      <Animated.View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: C.branco, opacity: bgOpacity }} />
+      {/* Borda inferior que aparece junto */}
+      <Animated.View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, backgroundColor: C.borda, opacity: borderOpacity }} />
+
+      <View style={{ width: '100%', maxWidth: MAX_W, paddingHorizontal: desk ? 56 : 24, flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
         <Text style={{ fontSize: 16, fontWeight: '900', color: C.texto1, letterSpacing: 4, flex: 1 }}>PACTUM</Text>
         {desk && (
           <View style={{ flexDirection: 'row', gap: 36, marginRight: 36 }}>
@@ -152,7 +162,7 @@ function LandingHeader() {
           </View>
         )}
         <View style={{ flexDirection: 'row', gap: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/login')} style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 8, borderWidth: 1, borderColor: C.borda }}>
+          <TouchableOpacity onPress={() => router.push('/login')} style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 8, borderWidth: 1, borderColor: C.borda, backgroundColor: 'rgba(255,255,255,0.85)' }}>
             <Text style={{ color: C.texto1, fontSize: 14 }}>Entrar</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/register')} style={{ paddingHorizontal: 18, paddingVertical: 9, borderRadius: 8, backgroundColor: C.texto1 }}>
@@ -170,7 +180,8 @@ function HeroSection() {
   const desk = width >= 1024
 
   return (
-    <View style={{ backgroundColor: C.branco, paddingTop: desk ? 120 : 72, paddingBottom: desk ? 100 : 64 }}>
+    <View style={{ backgroundColor: C.branco, paddingTop: desk ? 160 : 110, paddingBottom: desk ? 100 : 64, overflow: 'hidden' }}>
+      <HeroCanvas />
       <Centered>
         {/* Badge */}
         <FadeUp>
@@ -649,11 +660,19 @@ function LandingFooter() {
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function Landing() {
+  const scrollY = useRef(new Animated.Value(0)).current
+
   return (
     <View style={{ flex: 1, backgroundColor: C.branco }}>
-      <StatusBar barStyle="dark-content" backgroundColor={C.branco} />
-      <LandingHeader />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+      >
         <HeroSection />
         <AppSection />
         <ApiSection />
@@ -662,7 +681,8 @@ export default function Landing() {
         <BusinessSection />
         <CtaFinalSection />
         <LandingFooter />
-      </ScrollView>
+      </Animated.ScrollView>
+      <LandingHeader scrollY={scrollY} />
     </View>
   )
 }
