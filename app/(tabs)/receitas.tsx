@@ -133,7 +133,7 @@ export default function Receitas() {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={isDesktop
-          ? { alignSelf: 'center', width: '100%', maxWidth: 600, paddingHorizontal: 20 }
+          ? { maxWidth: 720, paddingHorizontal: 20 }
           : { paddingHorizontal: 20 }}
         showsVerticalScrollIndicator={false}
       >
