@@ -49,20 +49,6 @@ export type Mensagem = {
   created_at: string
 }
 
-export type Receita = {
-  id: string
-  user_id: string
-  familia_id: string | null
-  descricao: string
-  valor: number
-  tipo: 'salario' | 'freela' | 'bonus' | 'investimento' | 'outro'
-  recorrente: boolean
-  mes: number
-  ano: number
-  created_at: string
-}
-
-
 export type Saldo = {
   saldo: number
   total_receitas: number
