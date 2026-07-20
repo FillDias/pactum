@@ -37,6 +37,33 @@ export type Lancamento = {
   mes: number
   ano: number
   recorrente: boolean
+  compra_cartao_id?: string | null
+  numero_parcela?: number | null
+  created_at: string
+}
+
+export type Cartao = {
+  id: string
+  user_id: string
+  familia_id: string | null
+  apelido: string | null
+  operadora: string
+  limite: number | null
+  dia_vencimento: number | null
+  created_at: string
+}
+
+export type CompraCartao = {
+  id: string
+  user_id: string
+  familia_id: string | null
+  cartao_id: string
+  descricao: string
+  valor_total: number
+  numero_parcelas: number
+  mes_referencia: number
+  ano_referencia: number
+  cancelada_em: string | null
   created_at: string
 }
 
@@ -48,20 +75,6 @@ export type Mensagem = {
   tipo: 'texto' | 'sistema'
   created_at: string
 }
-
-export type Receita = {
-  id: string
-  user_id: string
-  familia_id: string | null
-  descricao: string
-  valor: number
-  tipo: 'salario' | 'freela' | 'bonus' | 'investimento' | 'outro'
-  recorrente: boolean
-  mes: number
-  ano: number
-  created_at: string
-}
-
 
 export type Saldo = {
   saldo: number

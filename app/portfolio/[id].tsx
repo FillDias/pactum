@@ -10,6 +10,7 @@ import {
   Alert,
   StatusBar,
   Platform,
+  KeyboardAvoidingView,
   useWindowDimensions,
 } from 'react-native'
 import { PieChart } from 'react-native-chart-kit'
@@ -856,13 +857,15 @@ export default function PortfolioDetalhe() {
 
       {/* Modal editar titulo de renda fixa */}
       <Modal visible={modalEditarVisivel} transparent animationType="slide" onRequestClose={() => setModalEditarVisivel(false)}>
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <View style={{
-            backgroundColor: colors.bg.secondary,
-            borderTopLeftRadius: 24, borderTopRightRadius: 24,
-            borderTopWidth: 1, borderColor: colors.bg.border,
-            padding: 24,
-          }}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+            <View style={{
+              backgroundColor: colors.bg.secondary,
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              borderTopWidth: 1, borderColor: colors.bg.border,
+              maxHeight: '90%',
+            }}>
+            <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
               Editar titulo
             </Text>
@@ -932,18 +935,22 @@ export default function PortfolioDetalhe() {
             >
               <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
             </TouchableOpacity>
+            </ScrollView>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Modal nova transacao */}
       <Modal visible={modalVisivel} transparent animationType="slide" onRequestClose={() => { setModalVisivel(false); resetForm() }}>
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
           <ScrollView style={{
             backgroundColor: colors.bg.secondary,
             borderTopLeftRadius: 24, borderTopRightRadius: 24,
             borderTopWidth: 1, borderColor: colors.bg.border,
-          }}>
+            maxHeight: '90%',
+          }} keyboardShouldPersistTaps="handled">
             <View style={{ padding: 24 }}>
               <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 16 }}>
                 Nova transacao
@@ -1219,7 +1226,8 @@ export default function PortfolioDetalhe() {
               </TouchableOpacity>
             </View>
           </ScrollView>
-        </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   )

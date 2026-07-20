@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback } from 'react'
 import {
   View,
   Text,
@@ -8,91 +8,21 @@ import {
   Platform,
 } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
-import { useAuthStore } from '../../store/authStore'
 import MesNavegador from '../../components/shared/MesNavegador'
-import { useFinancasStore } from '../../store/financasStore'
-import { useSaldoStore } from '../../store/saldoStore'
-import { usePortfolioStore } from '../../store/portfolioStore'
-import { useChatStore } from '../../store/chatStore'
-import { formatarMoeda } from '../../utils/formatters'
-import { colors } from '../../constants/colors'
 import SwipeableItem from '../../components/shared/SwipeableItem'
+import { colors } from '../../constants/colors'
 import { useResponsive } from '../../hooks/useResponsive'
-
-const DIAS_AVISO = 30
-
-function diasParaVencer(maturityDate: string): number {
-  const venc = new Date(maturityDate)
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-  return Math.ceil((venc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
-}
+import { useDashboardViewModel } from '../../viewmodels/useDashboardViewModel'
 
 export default function Inicio() {
   const { isDesktop } = useResponsive()
-  const { usuario, familia } = useAuthStore()
-  const { lancamentos, mesSelecionado, anoSelecionado, setMesSelecionado, buscarLancamentos, removerLancamento } =
-    useFinancasStore()
-  const { saldo, buscarSaldo } = useSaldoStore()
-  const { portfolios, summaries, buscarPortfolios, buscarPosicoes } = usePortfolioStore()
-  const { mensagens, buscarMensagens } = useChatStore()
-
-  const [escopoHome, setEscopoHome] = useState<'eu' | 'familia'>('familia')
-
-  const carregarPortfolios = useCallback(async () => {
-    await buscarPortfolios()
-    const ids = usePortfolioStore.getState().portfolios.map(p => p.id)
-    await Promise.all(ids.map(id => buscarPosicoes(id)))
-  }, [])
+  const vm = useDashboardViewModel()
 
   useFocusEffect(
     useCallback(() => {
-      buscarLancamentos()
-      buscarSaldo(mesSelecionado, anoSelecionado, familia ? escopoHome : undefined)
-      buscarMensagens()
-      carregarPortfolios()
-    }, [mesSelecionado, anoSelecionado, escopoHome])
+      vm.carregarDados()
+    }, [vm.mesSelecionado, vm.anoSelecionado, vm.escopoHome])
   )
-
-  const handleDeletar = async (id: string) => {
-    await removerLancamento(id)
-    buscarSaldo(mesSelecionado, anoSelecionado, familia ? escopoHome : undefined)
-  }
-
-  const saldoValor = saldo?.saldo ?? 0
-  const saldoPositivo = saldoValor >= 0
-  const saldoColor = saldoPositivo ? colors.status.positive : colors.status.negative
-
-  const totalInvestido = useMemo(
-    () => Object.values(summaries).reduce((s, p) => s + p.totalMarketValue, 0),
-    [summaries]
-  )
-  const totalPl = useMemo(
-    () => Object.values(summaries).reduce((s, p) => s + p.totalPl, 0),
-    [summaries]
-  )
-  const patrimonioTotal = saldoValor + totalInvestido
-
-  const alertasVencimento = useMemo(() => {
-    const alertas: { ticker: string; nome: string; dias: number; portfolioNome: string; marketValue: number }[] = []
-    portfolios.forEach(p => {
-      const s = summaries[p.id]
-      if (!s) return
-      s.positions.forEach(pos => {
-        if (!pos.maturityDate) return
-        const dias = diasParaVencer(pos.maturityDate)
-        if (dias >= 0 && dias <= DIAS_AVISO) {
-          alertas.push({ ticker: pos.ticker, nome: pos.name, dias, portfolioNome: p.name, marketValue: pos.marketValue })
-        }
-      })
-    })
-    return alertas.sort((a, b) => a.dias - b.dias)
-  }, [portfolios, summaries])
-
-  const atividadeRecente = mensagens
-    .filter(m => m.tipo === 'sistema')
-    .slice(-4)
-    .reverse()
 
   const sectionLabel = {
     fontSize: 11,
@@ -112,7 +42,7 @@ export default function Inicio() {
     }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
         <Text style={sectionLabel}>Saldo do mes</Text>
-        {familia && (
+        {vm.temFamilia && (
           <View style={{
             flexDirection: 'row',
             backgroundColor: colors.bg.secondary,
@@ -129,14 +59,11 @@ export default function Inicio() {
                   paddingHorizontal: 12,
                   paddingVertical: 5,
                   borderRadius: 6,
-                  backgroundColor: escopoHome === op ? colors.accent.main : 'transparent',
+                  backgroundColor: vm.escopoHome === op ? colors.accent.main : 'transparent',
                 }}
-                onPress={() => {
-                  setEscopoHome(op)
-                  buscarSaldo(mesSelecionado, anoSelecionado, op)
-                }}
+                onPress={() => vm.setEscopoHome(op)}
               >
-                <Text style={{ fontSize: 12, fontWeight: '600', color: escopoHome === op ? '#fff' : colors.text.secondary }}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: vm.escopoHome === op ? '#fff' : colors.text.secondary }}>
                   {op === 'eu' ? 'Eu' : 'Familia'}
                 </Text>
               </TouchableOpacity>
@@ -144,29 +71,29 @@ export default function Inicio() {
           </View>
         )}
       </View>
-      <Text style={{ fontSize: isDesktop ? 42 : 38, fontWeight: '700', color: saldoColor, letterSpacing: -1 }}>
-        {formatarMoeda(saldoValor)}
+      <Text style={{ fontSize: isDesktop ? 42 : 38, fontWeight: '700', color: vm.saldoColor, letterSpacing: -1 }}>
+        {vm.formatarMoeda(vm.saldoValor)}
       </Text>
       <View style={{ flexDirection: 'row', marginTop: 20, gap: 12 }}>
         <View style={{ flex: 1, backgroundColor: colors.bg.secondary, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.bg.border }}>
           <Text style={{ fontSize: 10, color: colors.text.tertiary, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Receitas</Text>
-          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.status.positive }}>{formatarMoeda(saldo?.total_receitas ?? 0)}</Text>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.status.positive }}>{vm.formatarMoeda(vm.totalReceitas)}</Text>
         </View>
         <View style={{ flex: 1, backgroundColor: colors.bg.secondary, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.bg.border }}>
           <Text style={{ fontSize: 10, color: colors.text.tertiary, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Gastos</Text>
-          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.status.negative }}>{formatarMoeda(saldo?.total_gastos ?? 0)}</Text>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.status.negative }}>{vm.formatarMoeda(vm.totalGastos)}</Text>
         </View>
       </View>
     </View>
   )
 
-  const AlertaSaldo = !saldoPositivo && saldoValor !== 0 ? (
+  const AlertaSaldo = !vm.saldoPositivo && vm.saldoValor !== 0 ? (
     <View style={{ marginTop: 10, backgroundColor: '#FFF5F5', borderRadius: 12, padding: 14, borderLeftWidth: 3, borderLeftColor: colors.status.negative }}>
       <Text style={{ color: colors.status.negative, fontSize: 13 }}>Saldo negativo. Revise seus lancamentos.</Text>
     </View>
   ) : null
 
-  const CardCarteiras = portfolios.length > 0 ? (
+  const CardCarteiras = vm.portfolios.length > 0 ? (
     <TouchableOpacity
       style={{ backgroundColor: colors.bg.card, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: colors.bg.border }}
       onPress={() => router.push('/(tabs)/investimentos' as any)}
@@ -178,23 +105,23 @@ export default function Inicio() {
       <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
         <View style={{ flex: 1 }}>
           <Text style={{ fontSize: 10, color: colors.text.tertiary, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Investido</Text>
-          <Text style={{ fontSize: 20, fontWeight: '700', color: colors.accent.dark }}>{formatarMoeda(totalInvestido)}</Text>
+          <Text style={{ fontSize: 20, fontWeight: '700', color: colors.accent.dark }}>{vm.formatarMoeda(vm.totalInvestido)}</Text>
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ fontSize: 10, color: colors.text.tertiary, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>P&L total</Text>
-          <Text style={{ fontSize: 20, fontWeight: '700', color: totalPl >= 0 ? colors.status.positive : colors.status.negative }}>
-            {totalPl >= 0 ? '+' : ''}{formatarMoeda(totalPl)}
+          <Text style={{ fontSize: 20, fontWeight: '700', color: vm.totalPl >= 0 ? colors.status.positive : colors.status.negative }}>
+            {vm.totalPl >= 0 ? '+' : ''}{vm.formatarMoeda(vm.totalPl)}
           </Text>
         </View>
       </View>
-      {portfolios.map(p => {
-        const s = summaries[p.id]
+      {vm.portfolios.map(p => {
+        const s = vm.summaries[p.id]
         if (!s) return null
         return (
           <View key={p.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.bg.border }}>
             <Text style={{ color: colors.text.secondary, fontSize: 13 }}>{p.name}</Text>
             <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-              <Text style={{ color: colors.text.primary, fontSize: 13, fontWeight: '600' }}>{formatarMoeda(s.totalMarketValue)}</Text>
+              <Text style={{ color: colors.text.primary, fontSize: 13, fontWeight: '600' }}>{vm.formatarMoeda(s.totalMarketValue)}</Text>
               <Text style={{ fontSize: 12, color: s.totalPl >= 0 ? colors.status.positive : colors.status.negative }}>
                 {s.totalPl >= 0 ? '+' : ''}{s.totalPlPercent.toFixed(1)}%
               </Text>
@@ -204,15 +131,15 @@ export default function Inicio() {
       })}
       <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.bg.border, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Text style={{ fontSize: 11, color: colors.text.tertiary, letterSpacing: 1, textTransform: 'uppercase' }}>Patrimônio total</Text>
-        <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text.primary }}>{formatarMoeda(patrimonioTotal)}</Text>
+        <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text.primary }}>{vm.formatarMoeda(vm.patrimonioTotal)}</Text>
       </View>
     </TouchableOpacity>
   ) : null
 
-  const SecaoAtividade = atividadeRecente.length > 0 ? (
+  const SecaoAtividade = vm.atividadeRecente.length > 0 ? (
     <View>
       <Text style={sectionLabel}>Atividade recente</Text>
-      {atividadeRecente.map(msg => (
+      {vm.atividadeRecente.map(msg => (
         <View key={msg.id} style={{ backgroundColor: colors.bg.card, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: colors.bg.border }}>
           <Text style={{ color: colors.text.secondary, fontSize: 13 }}>{msg.conteudo}</Text>
           <Text style={{ color: colors.text.tertiary, fontSize: 11, marginTop: 4 }}>
@@ -226,13 +153,13 @@ export default function Inicio() {
   const SecaoLancamentos = (
     <View>
       <Text style={sectionLabel}>Lancamentos recentes</Text>
-      {lancamentos.length === 0 ? (
+      {vm.lancamentos.length === 0 ? (
         <View style={{ backgroundColor: colors.bg.card, borderRadius: 16, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: colors.bg.border }}>
           <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Nenhum lancamento este mes.</Text>
         </View>
       ) : (
-        lancamentos.slice(0, 8).map(lancamento => (
-          <SwipeableItem key={lancamento.id} onDelete={() => handleDeletar(lancamento.id)}>
+        vm.lancamentos.slice(0, 8).map(lancamento => (
+          <SwipeableItem key={lancamento.id} onDelete={() => vm.handleDeletar(lancamento.id)}>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => router.push(`/lancamento/${lancamento.id}` as any)}
@@ -245,7 +172,7 @@ export default function Inicio() {
                 </Text>
               </View>
               <Text style={{ fontWeight: '700', fontSize: 15, color: lancamento.tipo === 'receita' ? colors.status.positive : colors.status.negative }}>
-                {lancamento.tipo === 'despesa' ? '-' : '+'}{formatarMoeda(lancamento.valor)}
+                {lancamento.tipo === 'despesa' ? '-' : '+'}{vm.formatarMoeda(lancamento.valor)}
               </Text>
             </TouchableOpacity>
           </SwipeableItem>
@@ -262,7 +189,7 @@ export default function Inicio() {
         {/* Header */}
         <View style={{ paddingHorizontal: 24, paddingTop: Platform.OS === 'web' ? 24 : 56, paddingBottom: 24 }}>
           <Text style={{ fontSize: 12, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-            Ola, {usuario?.nome}
+            Ola, {vm.nomeUsuario}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
             <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text.primary }}>Inicio</Text>
@@ -270,15 +197,14 @@ export default function Inicio() {
               <TouchableOpacity onPress={() => router.push('/(tabs)/relatorio' as any)}>
                 <Text style={{ fontSize: 12, color: colors.accent.main }}>Relatorio →</Text>
               </TouchableOpacity>
-              <MesNavegador mes={mesSelecionado} ano={anoSelecionado} onChange={(m, a) => setMesSelecionado(m, a)} />
+              <MesNavegador mes={vm.mesSelecionado} ano={vm.anoSelecionado} onChange={(m, a) => vm.setMesSelecionado(m, a)} />
             </View>
           </View>
         </View>
 
         {isDesktop ? (
           <View style={{ paddingHorizontal: 20 }}>
-            {/* Alertas */}
-            {alertasVencimento.map(alerta => (
+            {vm.alertasVencimento.map(alerta => (
               <View key={alerta.ticker} style={{
                 marginBottom: 10, backgroundColor: alerta.dias <= 7 ? '#FFF5F5' : '#FFFBF0',
                 borderRadius: 12, padding: 14, borderLeftWidth: 3,
@@ -288,12 +214,11 @@ export default function Inicio() {
                   {alerta.dias === 0 ? 'Vence hoje' : `Vence em ${alerta.dias} dia${alerta.dias !== 1 ? 's' : ''}`}{' — '}{alerta.ticker}
                 </Text>
                 <Text style={{ color: colors.text.secondary, fontSize: 12, marginTop: 2 }}>
-                  {alerta.nome} · {alerta.portfolioNome} · {formatarMoeda(alerta.marketValue)}
+                  {alerta.nome} · {alerta.portfolioNome} · {vm.formatarMoeda(alerta.marketValue)}
                 </Text>
               </View>
             ))}
 
-            {/* Linha 1: saldo | carteiras */}
             <View style={{ flexDirection: 'row', gap: 20, marginBottom: 20, alignItems: 'flex-start' }}>
               <View style={{ flex: 1, gap: 10 }}>
                 {CardSaldo}
@@ -311,19 +236,14 @@ export default function Inicio() {
               </View>
             </View>
 
-            {/* Linha 2: atividade | lançamentos */}
             <View style={{ flexDirection: 'row', gap: 20, alignItems: 'flex-start' }}>
-              <View style={{ flex: 1, gap: 8 }}>
-                {SecaoAtividade}
-              </View>
-              <View style={{ flex: 1 }}>
-                {SecaoLancamentos}
-              </View>
+              <View style={{ flex: 1, gap: 8 }}>{SecaoAtividade}</View>
+              <View style={{ flex: 1 }}>{SecaoLancamentos}</View>
             </View>
           </View>
         ) : (
           <>
-            {alertasVencimento.map(alerta => (
+            {vm.alertasVencimento.map(alerta => (
               <View key={alerta.ticker} style={{
                 marginHorizontal: 20, marginBottom: 10,
                 backgroundColor: alerta.dias <= 7 ? '#FFF5F5' : '#FFFBF0',
@@ -334,7 +254,7 @@ export default function Inicio() {
                   {alerta.dias === 0 ? 'Vence hoje' : `Vence em ${alerta.dias} dia${alerta.dias !== 1 ? 's' : ''}`}{' — '}{alerta.ticker}
                 </Text>
                 <Text style={{ color: colors.text.secondary, fontSize: 12, marginTop: 2 }}>
-                  {alerta.nome} · {alerta.portfolioNome} · {formatarMoeda(alerta.marketValue)}
+                  {alerta.nome} · {alerta.portfolioNome} · {vm.formatarMoeda(alerta.marketValue)}
                 </Text>
               </View>
             ))}

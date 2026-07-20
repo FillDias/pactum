@@ -16,6 +16,19 @@ export const filtrarPorUsuario = (
   return lancamentos.filter(l => l.user_id === usuarioId)
 }
 
+// Filtra lançamentos por tipo (despesa ou receita)
+export const filtrarPorTipo = (
+  lancamentos: Lancamento[],
+  tipo: Lancamento['tipo']
+): Lancamento[] => {
+  return lancamentos.filter(l => l.tipo === tipo)
+}
+
+// Soma o valor de uma lista de lançamentos
+export const somarValores = (lancamentos: Lancamento[]): number => {
+  return lancamentos.reduce((acc, l) => acc + l.valor, 0)
+}
+
 // Calcula o progresso de uma meta em porcentagem (0–100)
 export const calcularProgressoMeta = (
   valorAtual: number,

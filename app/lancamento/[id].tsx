@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   StatusBar,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
@@ -288,18 +290,20 @@ export default function DetalhesLancamento() {
         animationType="slide"
         onRequestClose={() => setModalVisivel(false)}
       >
-        <View style={{
-          flex: 1,
-          justifyContent: 'flex-end',
-          backgroundColor: 'rgba(0,0,0,0.75)',
-        }}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            backgroundColor: 'rgba(0,0,0,0.75)',
+          }}>
           <ScrollView style={{
             backgroundColor: colors.bg.secondary,
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             borderTopWidth: 1,
             borderColor: colors.bg.border,
-          }}>
+            maxHeight: '90%',
+          }} keyboardShouldPersistTaps="handled">
             <View style={{ padding: 24 }}>
               <Text style={{
                 color: colors.text.primary,
@@ -488,7 +492,8 @@ export default function DetalhesLancamento() {
               </TouchableOpacity>
             </View>
           </ScrollView>
-        </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   )

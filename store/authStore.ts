@@ -13,6 +13,7 @@ type AuthState = {
   register: (nome: string, email: string, senha: string) => Promise<void>
   logout: () => Promise<void>
   buscarPerfil: () => Promise<void>
+  atualizarFamilia: () => Promise<void>
   criarFamilia: (nome: string) => Promise<void>
   convidarMembro: (email: string) => Promise<void>
   entrarFamilia: (codigo: string) => Promise<void>
@@ -64,6 +65,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ usuario, familia, carregando: false })
     } catch {
       set({ carregando: false })
+    }
+  },
+
+  atualizarFamilia: async () => {
+    try {
+      const familia = await familiaService.buscarFamiliaAtual()
+      set({ familia })
+    } catch {
+      // keep existing familia on error
     }
   },
 

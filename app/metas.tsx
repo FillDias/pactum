@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   StatusBar,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
@@ -365,84 +366,88 @@ export default function Metas() {
         animationType="slide"
         onRequestClose={fechar}
       >
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.75)' }}>
-          <View style={{
-            backgroundColor: colors.bg.secondary,
-            borderTopLeftRadius: 24, borderTopRightRadius: 24,
-            padding: 24, paddingBottom: 40,
-            borderTopWidth: 1, borderColor: colors.bg.border,
-          }}>
-            <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
-              {modalModo === 'nova' ? 'Nova meta' : `Atualizar — ${metaSelecionada?.titulo}`}
-            </Text>
-
-            {modalModo === 'nova' ? (
-              <>
-                <TextInput
-                  style={inputStyle}
-                  placeholder="Titulo ex: Reserva de emergencia"
-                  placeholderTextColor={colors.text.tertiary}
-                  value={titulo}
-                  onChangeText={setTitulo}
-                  autoFocus
-                />
-                <TextInput
-                  style={inputStyle}
-                  placeholder="Valor alvo ex: 20000,00"
-                  placeholderTextColor={colors.text.tertiary}
-                  keyboardType="decimal-pad"
-                  value={valorAlvo}
-                  onChangeText={setValorAlvo}
-                />
-                <TextInput
-                  style={inputStyle}
-                  placeholder="Prazo ex: 2026-12-31"
-                  placeholderTextColor={colors.text.tertiary}
-                  value={prazo}
-                  onChangeText={setPrazo}
-                />
-              </>
-            ) : (
-              <>
-                <Text style={{ color: colors.text.secondary, fontSize: 13, marginBottom: 12 }}>
-                  Alvo: {formatarMoeda(metaSelecionada?.valor_alvo ?? 0)}
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.75)' }}>
+            <View style={{
+              backgroundColor: colors.bg.secondary,
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              borderTopWidth: 1, borderColor: colors.bg.border,
+              maxHeight: '90%',
+            }}>
+              <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
+                  {modalModo === 'nova' ? 'Nova meta' : `Atualizar — ${metaSelecionada?.titulo}`}
                 </Text>
-                <TextInput
-                  style={inputStyle}
-                  placeholder="Valor atual ex: 5000,00"
-                  placeholderTextColor={colors.text.tertiary}
-                  keyboardType="decimal-pad"
-                  value={novoValor}
-                  onChangeText={setNovoValor}
-                  autoFocus
-                />
-              </>
-            )}
 
-            <TouchableOpacity
-              style={{
-                backgroundColor: colors.accent.main, borderRadius: 12,
-                paddingVertical: 16, alignItems: 'center', marginBottom: 12,
-              }}
-              onPress={modalModo === 'nova' ? handleSalvarNova : handleAtualizar}
-              disabled={salvando}
-            >
-              {salvando
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
-                    {modalModo === 'nova' ? 'Criar meta' : 'Salvar'}
-                  </Text>
-              }
-            </TouchableOpacity>
+                {modalModo === 'nova' ? (
+                  <>
+                    <TextInput
+                      style={inputStyle}
+                      placeholder="Titulo ex: Reserva de emergencia"
+                      placeholderTextColor={colors.text.tertiary}
+                      value={titulo}
+                      onChangeText={setTitulo}
+                      autoFocus
+                    />
+                    <TextInput
+                      style={inputStyle}
+                      placeholder="Valor alvo ex: 20000,00"
+                      placeholderTextColor={colors.text.tertiary}
+                      keyboardType="decimal-pad"
+                      value={valorAlvo}
+                      onChangeText={setValorAlvo}
+                    />
+                    <TextInput
+                      style={inputStyle}
+                      placeholder="Prazo ex: 2026-12-31"
+                      placeholderTextColor={colors.text.tertiary}
+                      value={prazo}
+                      onChangeText={setPrazo}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Text style={{ color: colors.text.secondary, fontSize: 13, marginBottom: 12 }}>
+                      Alvo: {formatarMoeda(metaSelecionada?.valor_alvo ?? 0)}
+                    </Text>
+                    <TextInput
+                      style={inputStyle}
+                      placeholder="Valor atual ex: 5000,00"
+                      placeholderTextColor={colors.text.tertiary}
+                      keyboardType="decimal-pad"
+                      value={novoValor}
+                      onChangeText={setNovoValor}
+                      autoFocus
+                    />
+                  </>
+                )}
 
-            <TouchableOpacity
-              style={{ paddingVertical: 12, alignItems: 'center' }}
-              onPress={fechar}
-            >
-              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: colors.accent.main, borderRadius: 12,
+                    paddingVertical: 16, alignItems: 'center', marginBottom: 12,
+                  }}
+                  onPress={modalModo === 'nova' ? handleSalvarNova : handleAtualizar}
+                  disabled={salvando}
+                >
+                  {salvando
+                    ? <ActivityIndicator color="#fff" />
+                    : <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
+                        {modalModo === 'nova' ? 'Criar meta' : 'Salvar'}
+                      </Text>
+                  }
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{ paddingVertical: 12, alignItems: 'center' }}
+                  onPress={fechar}
+                >
+                  <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   )

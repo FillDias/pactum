@@ -1,2 +1,12 @@
-// Hook de metas — expõe metas e ações do metasStore para as telas
-// PARTE 2 - a implementar
+import { useEffect } from 'react'
+import { useMetasStore } from '../store/metasStore'
+
+export const useMetas = () => {
+  const store = useMetasStore()
+
+  useEffect(() => {
+    store.buscarMetas()
+  }, [])
+
+  return store
+}

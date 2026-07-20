@@ -90,6 +90,15 @@ function TabsNavigator() {
         }}
       />
       <Tabs.Screen
+        name="cartoes"
+        options={{
+          title: 'Cartoes',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="credit-card" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="configuracoes"
         options={{
           title: 'Config',

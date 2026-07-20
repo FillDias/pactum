@@ -1,0 +1,5 @@
+# Token exchange between pactum-api and pactum-core
+
+`pactum-core` is an independently deployed service (own database, own stack — Rails + Kotlin) and has no access to the `pactum-api` database, so it cannot validate the primary JWT itself. Instead, on login the client authenticates against `pactum-api` and immediately exchanges that token for a Core-issued one via `pactum-core-api POST /auth/sync` (sending `{ email, pactum_token }`, receiving `{ token }`). The client then holds two tokens — `pactum_token` for `pactum-api` calls and `pactum_core_token` for `pactum-core-api` calls — and silently repeats the exchange to refresh the Core token when it expires.
+
+This is a deliberate token exchange / service-to-service trust pattern: `pactum-core` trusts a valid `pactum-api` token as proof of identity and mints its own, so the two services can scale and evolve independently and Core never needs to know `pactum-api`'s password/user logic. The cost is that every client must manage two tokens and every Core-token expiry triggers an extra network round-trip, invisible from reading `pactum-core-api` code alone.

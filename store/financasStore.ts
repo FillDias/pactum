@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { Lancamento } from '../types'
 import * as lancamentosService from '../services/lancamentosService'
-import { calcularSaldo, filtrarPorUsuario } from '../utils/calculators'
+import { filtrarPorUsuario } from '../utils/calculators'
 import { getMesAtual, getAnoAtual } from '../utils/formatters'
 
 type Escopo = 'eu' | 'familia'
@@ -14,8 +14,6 @@ type FinancasState = {
   anoSelecionado: number
   escopo: Escopo
 
-  saldoFamiliar: () => number
-  saldoPorUsuario: (usuarioId: string) => number
   lancamentosPorUsuario: (usuarioId: string) => Lancamento[]
 
   buscarLancamentos: () => Promise<void>
@@ -34,11 +32,6 @@ export const useFinancasStore = create<FinancasState>((set, get) => ({
   mesSelecionado: getMesAtual(),
   anoSelecionado: getAnoAtual(),
   escopo: 'eu',
-
-  saldoFamiliar: () => calcularSaldo(get().lancamentos),
-
-  saldoPorUsuario: (usuarioId) =>
-    calcularSaldo(filtrarPorUsuario(get().lancamentos, usuarioId)),
 
   lancamentosPorUsuario: (usuarioId) =>
     filtrarPorUsuario(get().lancamentos, usuarioId),

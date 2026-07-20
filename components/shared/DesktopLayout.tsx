@@ -24,6 +24,7 @@ const GRUPOS_NAV: Array<{ grupo: string; items: NavItem[] }> = [
     grupo: 'Patrimonio',
     items: [
       { label: 'Investimentos', icon: 'trending-up', href: '/investimentos' },
+      { label: 'Cartoes', icon: 'credit-card', href: '/cartoes' },
     ],
   },
   {
