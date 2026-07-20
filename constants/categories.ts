@@ -9,7 +9,8 @@ export const CATEGORIAS = [
   { id: '5', nome: 'Educação', icone: '📚', cor: '#8B5CF6' },
   { id: '6', nome: 'Lazer', icone: '🎮', cor: '#EC4899' },
   { id: '7', nome: 'Investimento', icone: '📈', cor: '#06B6D4' },
-  { id: '8', nome: 'Outros', icone: '📦', cor: '#6B7280' },
+  { id: '8', nome: 'Cartao', icone: '💳', cor: '#E67E22' },
+  { id: '9', nome: 'Outros', icone: '📦', cor: '#6B7280' },
 ]
 
 export const CATEGORIAS_RECEITA = [
@@ -22,3 +23,12 @@ export const CATEGORIAS_RECEITA = [
 
 // Dias de vencimento disponíveis para lançamentos recorrentes
 export const VENCIMENTOS = [5, 20, 30]
+
+// Operadoras de cartão de crédito pré-definidas. "Outra" libera um campo de texto livre.
+export const OPERADORAS_CARTAO = [
+  'Inter', 'Sicredi', 'Sicoob', 'Itaú', 'Santander', '99Pay', 'BTG', 'RecargaPay',
+]
+export const OPERADORA_OUTRA = 'Outra'
+
+// Quantidade de parcelas permitida para uma compra no cartão (1x até 48x)
+export const PARCELAS_CARTAO = Array.from({ length: 48 }, (_, i) => i + 1)
