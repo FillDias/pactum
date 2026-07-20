@@ -22,7 +22,7 @@ export default function Login() {
   const handleLogin = async () => {
     if (!email || !senha) return
     await login(email, senha)
-    if (!erro) router.replace('/(tabs)')
+    if (!useAuthStore.getState().erro) router.replace('/(tabs)')
   }
 
   return (

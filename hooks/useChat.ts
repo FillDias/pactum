@@ -1,2 +1,13 @@
-// Hook de chat — expõe mensagens e ações do chatStore para as telas
-// PARTE 2 - a implementar
+import { useEffect } from 'react'
+import { useChatStore } from '../store/chatStore'
+
+export const useChat = () => {
+  const store = useChatStore()
+
+  useEffect(() => {
+    store.buscarMensagens()
+    store.marcarComoLidas()
+  }, [])
+
+  return store
+}

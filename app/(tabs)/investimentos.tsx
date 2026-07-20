@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import {
   View,
   Text,
@@ -7,75 +7,27 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
-  Alert,
   StatusBar,
   Platform,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useFocusEffect } from '@react-navigation/native'
-import { useCallback } from 'react'
-import { usePortfolioStore } from '../../store/portfolioStore'
-import { formatarMoeda } from '../../utils/formatters'
 import { colors } from '../../constants/colors'
 import { useResponsive } from '../../hooks/useResponsive'
+import { useInvestimentosViewModel } from '../../viewmodels/useInvestimentosViewModel'
 
 const MOEDAS = ['BRL', 'USD', 'EUR']
 
 export default function Investimentos() {
   const { isDesktop } = useResponsive()
   const router = useRouter()
-
-  const {
-    portfolios,
-    summaries,
-    carregando,
-    erro,
-    coreConectado,
-    buscarPortfolios,
-    criarPortfolio,
-    deletarPortfolio,
-    limparErro,
-  } = usePortfolioStore()
-
-  const [modalVisivel, setModalVisivel] = useState(false)
-  const [nome, setNome] = useState('')
-  const [descricao, setDescricao] = useState('')
-  const [moeda, setMoeda] = useState('BRL')
+  const vm = useInvestimentosViewModel()
 
   useFocusEffect(
     useCallback(() => {
-      buscarPortfolios()
+      vm.buscarPortfolios()
     }, [])
   )
-
-  const totalPatrimonio = portfolios.reduce((acc, p) => {
-    const summary = summaries[p.id]
-    return acc + (summary?.totalMarketValue ?? 0)
-  }, 0)
-
-  const totalPL = portfolios.reduce((acc, p) => {
-    const summary = summaries[p.id]
-    return acc + (summary?.totalPl ?? 0)
-  }, 0)
-
-  const handleCriar = async () => {
-    if (!nome.trim()) {
-      Alert.alert('Atencao', 'Informe um nome para a carteira')
-      return
-    }
-    await criarPortfolio({ name: nome.trim(), description: descricao.trim() || undefined, currency: moeda })
-    setNome('')
-    setDescricao('')
-    setMoeda('BRL')
-    setModalVisivel(false)
-  }
-
-  const handleDeletar = (id: string, name: string) => {
-    Alert.alert('Remover carteira', `Deseja remover "${name}" e todas as suas transacoes?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Remover', style: 'destructive', onPress: () => deletarPortfolio(id) },
-    ])
-  }
 
   const sectionLabel = {
     fontSize: 10,
@@ -84,8 +36,6 @@ export default function Investimentos() {
     textTransform: 'uppercase' as const,
     marginBottom: 8,
   }
-
-  const plColor = (v: number) => (v >= 0 ? colors.status.positive : colors.status.negative)
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg.primary }}>
@@ -100,33 +50,18 @@ export default function Investimentos() {
           Carteiras
         </Text>
 
-        {portfolios.length > 0 && (
+        {vm.portfolios.length > 0 && (
           <View style={{ flexDirection: 'row', marginTop: 16, gap: 10 }}>
-            <View style={{
-              flex: 1,
-              backgroundColor: colors.bg.card,
-              borderRadius: 14,
-              padding: 14,
-              borderWidth: 1,
-              borderColor: colors.bg.border,
-            }}>
+            <View style={{ flex: 1, backgroundColor: colors.bg.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: colors.bg.border }}>
               <Text style={sectionLabel}>Total investido</Text>
               <Text style={{ fontSize: 16, fontWeight: '700', color: colors.accent.main }}>
-                {formatarMoeda(totalPatrimonio)}
+                {vm.formatarMoeda(vm.totalPatrimonio)}
               </Text>
             </View>
-
-            <View style={{
-              flex: 1,
-              backgroundColor: colors.bg.card,
-              borderRadius: 14,
-              padding: 14,
-              borderWidth: 1,
-              borderColor: colors.bg.border,
-            }}>
+            <View style={{ flex: 1, backgroundColor: colors.bg.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: colors.bg.border }}>
               <Text style={sectionLabel}>P&L total</Text>
-              <Text style={{ fontSize: 16, fontWeight: '700', color: plColor(totalPL) }}>
-                {totalPL >= 0 ? '+' : ''}{formatarMoeda(totalPL)}
+              <Text style={{ fontSize: 16, fontWeight: '700', color: vm.plColor(vm.totalPL) }}>
+                {vm.totalPL >= 0 ? '+' : ''}{vm.formatarMoeda(vm.totalPL)}
               </Text>
             </View>
           </View>
@@ -140,18 +75,10 @@ export default function Investimentos() {
           : { paddingHorizontal: 20 }}
         showsVerticalScrollIndicator={false}
       >
-        {carregando ? (
+        {vm.carregando ? (
           <ActivityIndicator color={colors.accent.main} style={{ marginTop: 32 }} />
-        ) : !coreConectado ? (
-          <View style={{
-            backgroundColor: colors.bg.card,
-            borderRadius: 16,
-            padding: 24,
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: colors.bg.border,
-            marginTop: 8,
-          }}>
+        ) : !vm.coreConectado ? (
+          <View style={{ backgroundColor: colors.bg.card, borderRadius: 16, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: colors.bg.border, marginTop: 8 }}>
             <Text style={{ color: colors.text.primary, fontSize: 15, fontWeight: '600', marginBottom: 8 }}>
               Carteiras nao conectadas
             </Text>
@@ -159,75 +86,43 @@ export default function Investimentos() {
               Faca login novamente para conectar o modulo de carteiras.
             </Text>
           </View>
-        ) : portfolios.length === 0 ? (
-          <View style={{
-            backgroundColor: colors.bg.card,
-            borderRadius: 16,
-            padding: 24,
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: colors.bg.border,
-            marginTop: 8,
-          }}>
-            <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>
-              Nenhuma carteira criada.
-            </Text>
-            <Text style={{ color: colors.text.tertiary, fontSize: 12, marginTop: 4 }}>
-              Toque em + para criar sua primeira carteira.
-            </Text>
+        ) : vm.portfolios.length === 0 ? (
+          <View style={{ backgroundColor: colors.bg.card, borderRadius: 16, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: colors.bg.border, marginTop: 8 }}>
+            <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Nenhuma carteira criada.</Text>
+            <Text style={{ color: colors.text.tertiary, fontSize: 12, marginTop: 4 }}>Toque em + para criar sua primeira carteira.</Text>
           </View>
         ) : (
-          portfolios.map(portfolio => {
-            const summary = summaries[portfolio.id]
+          vm.portfolios.map(portfolio => {
+            const summary = vm.summaries[portfolio.id]
             return (
               <TouchableOpacity
                 key={portfolio.id}
                 onPress={() => router.push(`/portfolio/${portfolio.id}` as any)}
-                onLongPress={() => handleDeletar(portfolio.id, portfolio.name)}
-                style={{
-                  backgroundColor: colors.bg.card,
-                  borderRadius: 16,
-                  padding: 18,
-                  marginBottom: 12,
-                  borderWidth: 1,
-                  borderColor: colors.bg.border,
-                }}
+                onLongPress={() => vm.handleDeletar(portfolio.id, portfolio.name)}
+                style={{ backgroundColor: colors.bg.card, borderRadius: 16, padding: 18, marginBottom: 12, borderWidth: 1, borderColor: colors.bg.border }}
               >
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.text.primary, fontSize: 16, fontWeight: '600' }}>
-                      {portfolio.name}
-                    </Text>
+                    <Text style={{ color: colors.text.primary, fontSize: 16, fontWeight: '600' }}>{portfolio.name}</Text>
                     {portfolio.description ? (
-                      <Text style={{ color: colors.text.tertiary, fontSize: 12, marginTop: 2 }}>
-                        {portfolio.description}
-                      </Text>
+                      <Text style={{ color: colors.text.tertiary, fontSize: 12, marginTop: 2 }}>{portfolio.description}</Text>
                     ) : null}
                   </View>
-                  <Text style={{ color: colors.text.tertiary, fontSize: 11, marginTop: 2 }}>
-                    {portfolio.currency}
-                  </Text>
+                  <Text style={{ color: colors.text.tertiary, fontSize: 11, marginTop: 2 }}>{portfolio.currency}</Text>
                 </View>
 
                 {summary ? (
-                  <View style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    marginTop: 14,
-                    paddingTop: 12,
-                    borderTopWidth: 1,
-                    borderTopColor: colors.bg.border,
-                  }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.bg.border }}>
                     <View>
                       <Text style={sectionLabel}>Valor atual</Text>
                       <Text style={{ color: colors.text.primary, fontSize: 15, fontWeight: '700' }}>
-                        {formatarMoeda(summary.totalMarketValue)}
+                        {vm.formatarMoeda(summary.totalMarketValue)}
                       </Text>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={sectionLabel}>P&L</Text>
-                      <Text style={{ color: plColor(summary.totalPl), fontSize: 15, fontWeight: '700' }}>
-                        {summary.totalPl >= 0 ? '+' : ''}{formatarMoeda(summary.totalPl)}
+                      <Text style={{ color: vm.plColor(summary.totalPl), fontSize: 15, fontWeight: '700' }}>
+                        {summary.totalPl >= 0 ? '+' : ''}{vm.formatarMoeda(summary.totalPl)}
                         {'  '}
                         <Text style={{ fontSize: 12 }}>
                           ({summary.totalPlPercent >= 0 ? '+' : ''}{summary.totalPlPercent.toFixed(2)}%)
@@ -248,42 +143,31 @@ export default function Investimentos() {
       </ScrollView>
 
       {/* FAB */}
-      {coreConectado && (
+      {vm.coreConectado && (
         <TouchableOpacity
           style={{
-            position: 'absolute',
-            bottom: 24,
-            right: 24,
-            backgroundColor: colors.accent.main,
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            alignItems: 'center',
-            justifyContent: 'center',
+            position: 'absolute', bottom: 24, right: 24,
+            backgroundColor: colors.accent.main, width: 56, height: 56,
+            borderRadius: 28, alignItems: 'center', justifyContent: 'center',
           }}
-          onPress={() => setModalVisivel(true)}
+          onPress={vm.abrirModal}
         >
-          <Text style={{ color: colors.text.inverse, fontSize: 28, lineHeight: 32, fontWeight: '300' }}>
-            +
-          </Text>
+          <Text style={{ color: colors.text.inverse, fontSize: 28, lineHeight: 32, fontWeight: '300' }}>+</Text>
         </TouchableOpacity>
       )}
 
       {/* Modal nova carteira */}
       <Modal
-        visible={modalVisivel}
+        visible={vm.modalVisivel}
         transparent
         animationType="slide"
-        onRequestClose={() => setModalVisivel(false)}
+        onRequestClose={vm.fecharModal}
       >
         <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
           <View style={{
             backgroundColor: colors.bg.secondary,
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            borderTopWidth: 1,
-            borderColor: colors.bg.border,
-            padding: 24,
+            borderTopLeftRadius: 24, borderTopRightRadius: 24,
+            borderTopWidth: 1, borderColor: colors.bg.border, padding: 24,
           }}>
             <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
               Nova carteira
@@ -291,38 +175,26 @@ export default function Investimentos() {
 
             <TextInput
               style={{
-                backgroundColor: colors.bg.input,
-                borderWidth: 1,
-                borderColor: colors.bg.border,
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                fontSize: 15,
-                color: colors.text.primary,
-                marginBottom: 12,
+                backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
+                borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+                fontSize: 15, color: colors.text.primary, marginBottom: 12,
               }}
               placeholder="Nome ex: Carteira Principal"
               placeholderTextColor={colors.text.tertiary}
-              value={nome}
-              onChangeText={setNome}
+              value={vm.nome}
+              onChangeText={vm.setNome}
             />
 
             <TextInput
               style={{
-                backgroundColor: colors.bg.input,
-                borderWidth: 1,
-                borderColor: colors.bg.border,
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                fontSize: 15,
-                color: colors.text.primary,
-                marginBottom: 16,
+                backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
+                borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+                fontSize: 15, color: colors.text.primary, marginBottom: 16,
               }}
               placeholder="Descricao (opcional)"
               placeholderTextColor={colors.text.tertiary}
-              value={descricao}
-              onChangeText={setDescricao}
+              value={vm.descricao}
+              onChangeText={vm.setDescricao}
             />
 
             <Text style={sectionLabel}>Moeda</Text>
@@ -331,20 +203,15 @@ export default function Investimentos() {
                 <TouchableOpacity
                   key={m}
                   style={{
-                    flex: 1,
-                    paddingVertical: 10,
-                    borderRadius: 10,
-                    alignItems: 'center',
-                    backgroundColor: moeda === m ? colors.accent.main : colors.bg.input,
-                    borderWidth: 1,
-                    borderColor: moeda === m ? colors.accent.main : colors.bg.border,
+                    flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center',
+                    backgroundColor: vm.moeda === m ? colors.accent.main : colors.bg.input,
+                    borderWidth: 1, borderColor: vm.moeda === m ? colors.accent.main : colors.bg.border,
                   }}
-                  onPress={() => setMoeda(m)}
+                  onPress={() => vm.setMoeda(m)}
                 >
                   <Text style={{
-                    color: moeda === m ? colors.text.inverse : colors.text.secondary,
-                    fontWeight: '600',
-                    fontSize: 13,
+                    color: vm.moeda === m ? colors.text.inverse : colors.text.secondary,
+                    fontWeight: '600', fontSize: 13,
                   }}>
                     {m}
                   </Text>
@@ -353,29 +220,18 @@ export default function Investimentos() {
             </View>
 
             <TouchableOpacity
-              style={{
-                backgroundColor: colors.accent.main,
-                borderRadius: 12,
-                paddingVertical: 16,
-                alignItems: 'center',
-                marginBottom: 12,
-              }}
-              onPress={handleCriar}
-              disabled={carregando}
+              style={{ backgroundColor: colors.accent.main, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
+              onPress={vm.handleCriar}
+              disabled={vm.carregando}
             >
-              {carregando ? (
+              {vm.carregando ? (
                 <ActivityIndicator color={colors.text.inverse} />
               ) : (
-                <Text style={{ color: colors.text.inverse, fontWeight: '700', fontSize: 15 }}>
-                  Criar carteira
-                </Text>
+                <Text style={{ color: colors.text.inverse, fontWeight: '700', fontSize: 15 }}>Criar carteira</Text>
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={{ paddingVertical: 12, alignItems: 'center' }}
-              onPress={() => setModalVisivel(false)}
-            >
+            <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={vm.fecharModal}>
               <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
             </TouchableOpacity>
           </View>
