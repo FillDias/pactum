@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   StatusBar,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useFocusEffect } from '@react-navigation/native'
@@ -163,79 +164,84 @@ export default function Investimentos() {
         animationType="slide"
         onRequestClose={vm.fecharModal}
       >
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <View style={{
-            backgroundColor: colors.bg.secondary,
-            borderTopLeftRadius: 24, borderTopRightRadius: 24,
-            borderTopWidth: 1, borderColor: colors.bg.border, padding: 24,
-          }}>
-            <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
-              Nova carteira
-            </Text>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+            <View style={{
+              backgroundColor: colors.bg.secondary,
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              borderTopWidth: 1, borderColor: colors.bg.border,
+              maxHeight: '90%',
+            }}>
+              <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
+                  Nova carteira
+                </Text>
 
-            <TextInput
-              style={{
-                backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
-                borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-                fontSize: 15, color: colors.text.primary, marginBottom: 12,
-              }}
-              placeholder="Nome ex: Carteira Principal"
-              placeholderTextColor={colors.text.tertiary}
-              value={vm.nome}
-              onChangeText={vm.setNome}
-            />
-
-            <TextInput
-              style={{
-                backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
-                borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-                fontSize: 15, color: colors.text.primary, marginBottom: 16,
-              }}
-              placeholder="Descricao (opcional)"
-              placeholderTextColor={colors.text.tertiary}
-              value={vm.descricao}
-              onChangeText={vm.setDescricao}
-            />
-
-            <Text style={sectionLabel}>Moeda</Text>
-            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20 }}>
-              {MOEDAS.map(m => (
-                <TouchableOpacity
-                  key={m}
+                <TextInput
                   style={{
-                    flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center',
-                    backgroundColor: vm.moeda === m ? colors.accent.main : colors.bg.input,
-                    borderWidth: 1, borderColor: vm.moeda === m ? colors.accent.main : colors.bg.border,
+                    backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
+                    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+                    fontSize: 15, color: colors.text.primary, marginBottom: 12,
                   }}
-                  onPress={() => vm.setMoeda(m)}
+                  placeholder="Nome ex: Carteira Principal"
+                  placeholderTextColor={colors.text.tertiary}
+                  value={vm.nome}
+                  onChangeText={vm.setNome}
+                />
+
+                <TextInput
+                  style={{
+                    backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
+                    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+                    fontSize: 15, color: colors.text.primary, marginBottom: 16,
+                  }}
+                  placeholder="Descricao (opcional)"
+                  placeholderTextColor={colors.text.tertiary}
+                  value={vm.descricao}
+                  onChangeText={vm.setDescricao}
+                />
+
+                <Text style={sectionLabel}>Moeda</Text>
+                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20 }}>
+                  {MOEDAS.map(m => (
+                    <TouchableOpacity
+                      key={m}
+                      style={{
+                        flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center',
+                        backgroundColor: vm.moeda === m ? colors.accent.main : colors.bg.input,
+                        borderWidth: 1, borderColor: vm.moeda === m ? colors.accent.main : colors.bg.border,
+                      }}
+                      onPress={() => vm.setMoeda(m)}
+                    >
+                      <Text style={{
+                        color: vm.moeda === m ? colors.text.inverse : colors.text.secondary,
+                        fontWeight: '600', fontSize: 13,
+                      }}>
+                        {m}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <TouchableOpacity
+                  style={{ backgroundColor: colors.accent.main, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
+                  onPress={vm.handleCriar}
+                  disabled={vm.carregando}
                 >
-                  <Text style={{
-                    color: vm.moeda === m ? colors.text.inverse : colors.text.secondary,
-                    fontWeight: '600', fontSize: 13,
-                  }}>
-                    {m}
-                  </Text>
+                  {vm.carregando ? (
+                    <ActivityIndicator color={colors.text.inverse} />
+                  ) : (
+                    <Text style={{ color: colors.text.inverse, fontWeight: '700', fontSize: 15 }}>Criar carteira</Text>
+                  )}
                 </TouchableOpacity>
-              ))}
+
+                <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={vm.fecharModal}>
+                  <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
+                </TouchableOpacity>
+              </ScrollView>
             </View>
-
-            <TouchableOpacity
-              style={{ backgroundColor: colors.accent.main, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
-              onPress={vm.handleCriar}
-              disabled={vm.carregando}
-            >
-              {vm.carregando ? (
-                <ActivityIndicator color={colors.text.inverse} />
-              ) : (
-                <Text style={{ color: colors.text.inverse, fontWeight: '700', fontSize: 15 }}>Criar carteira</Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={vm.fecharModal}>
-              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
-            </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   )

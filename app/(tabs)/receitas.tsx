@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   StatusBar,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native'
 import { useResponsive } from '../../hooks/useResponsive'
 import { colors } from '../../constants/colors'
@@ -111,95 +112,100 @@ export default function Receitas() {
         animationType="slide"
         onRequestClose={vm.fecharModal}
       >
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <View style={{
-            backgroundColor: colors.bg.secondary,
-            borderTopLeftRadius: 24, borderTopRightRadius: 24,
-            padding: 24, borderTopWidth: 1, borderColor: colors.bg.border,
-          }}>
-            <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
-              Nova receita
-            </Text>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+            <View style={{
+              backgroundColor: colors.bg.secondary,
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              borderTopWidth: 1, borderColor: colors.bg.border,
+              maxHeight: '90%',
+            }}>
+              <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
+                  Nova receita
+                </Text>
 
-            <TextInput
-              style={inputStyle}
-              placeholder="Descricao ex: Salario"
-              placeholderTextColor={colors.text.tertiary}
-              value={vm.descricao}
-              onChangeText={vm.setDescricao}
-            />
+                <TextInput
+                  style={inputStyle}
+                  placeholder="Descricao ex: Salario"
+                  placeholderTextColor={colors.text.tertiary}
+                  value={vm.descricao}
+                  onChangeText={vm.setDescricao}
+                />
 
-            <TextInput
-              style={inputStyle}
-              placeholder="Valor ex: 3000,00"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="decimal-pad"
-              value={vm.valor}
-              onChangeText={vm.setValor}
-            />
+                <TextInput
+                  style={inputStyle}
+                  placeholder="Valor ex: 3000,00"
+                  placeholderTextColor={colors.text.tertiary}
+                  keyboardType="decimal-pad"
+                  value={vm.valor}
+                  onChangeText={vm.setValor}
+                />
 
-            <Text style={{ fontSize: 11, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
-              Categoria
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {CATEGORIAS_RECEITA.map(cat => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    style={{
-                      paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-                      backgroundColor: vm.categoria === cat.nome ? colors.status.positive : colors.bg.input,
-                      borderWidth: 1,
-                      borderColor: vm.categoria === cat.nome ? colors.status.positive : colors.bg.border,
-                    }}
-                    onPress={() => vm.setCategoria(cat.nome)}
-                  >
-                    <Text style={{ color: vm.categoria === cat.nome ? '#fff' : colors.text.secondary, fontSize: 13 }}>
-                      {cat.icone} {cat.nome}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+                <Text style={{ fontSize: 11, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
+                  Categoria
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    {CATEGORIAS_RECEITA.map(cat => (
+                      <TouchableOpacity
+                        key={cat.id}
+                        style={{
+                          paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                          backgroundColor: vm.categoria === cat.nome ? colors.status.positive : colors.bg.input,
+                          borderWidth: 1,
+                          borderColor: vm.categoria === cat.nome ? colors.status.positive : colors.bg.border,
+                        }}
+                        onPress={() => vm.setCategoria(cat.nome)}
+                      >
+                        <Text style={{ color: vm.categoria === cat.nome ? '#fff' : colors.text.secondary, fontSize: 13 }}>
+                          {cat.icone} {cat.nome}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
 
-            <TouchableOpacity
-              style={{
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                backgroundColor: colors.bg.input, borderRadius: 12, padding: 14, marginBottom: 16,
-                borderWidth: 1, borderColor: colors.bg.border,
-              }}
-              onPress={() => vm.setRecorrente(!vm.recorrente)}
-            >
-              <Text style={{ color: colors.text.primary, fontSize: 14 }}>Recorrente todo mes</Text>
-              <View style={{
-                width: 44, height: 24, borderRadius: 12,
-                backgroundColor: vm.recorrente ? colors.status.positive : colors.bg.border,
-                justifyContent: 'center', paddingHorizontal: 3,
-              }}>
-                <View style={{
-                  width: 18, height: 18, borderRadius: 9, backgroundColor: '#fff',
-                  alignSelf: vm.recorrente ? 'flex-end' : 'flex-start',
-                }} />
-              </View>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                    backgroundColor: colors.bg.input, borderRadius: 12, padding: 14, marginBottom: 16,
+                    borderWidth: 1, borderColor: colors.bg.border,
+                  }}
+                  onPress={() => vm.setRecorrente(!vm.recorrente)}
+                >
+                  <Text style={{ color: colors.text.primary, fontSize: 14 }}>Recorrente todo mes</Text>
+                  <View style={{
+                    width: 44, height: 24, borderRadius: 12,
+                    backgroundColor: vm.recorrente ? colors.status.positive : colors.bg.border,
+                    justifyContent: 'center', paddingHorizontal: 3,
+                  }}>
+                    <View style={{
+                      width: 18, height: 18, borderRadius: 9, backgroundColor: '#fff',
+                      alignSelf: vm.recorrente ? 'flex-end' : 'flex-start',
+                    }} />
+                  </View>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              style={{ backgroundColor: colors.status.positive, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
-              onPress={vm.handleSalvar}
-              disabled={vm.carregando}
-            >
-              {vm.carregando ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Salvar receita</Text>
-              )}
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ backgroundColor: colors.status.positive, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
+                  onPress={vm.handleSalvar}
+                  disabled={vm.carregando}
+                >
+                  {vm.carregando ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Salvar receita</Text>
+                  )}
+                </TouchableOpacity>
 
-            <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={vm.fecharModal}>
-              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
-            </TouchableOpacity>
+                <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={vm.fecharModal}>
+                  <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   )

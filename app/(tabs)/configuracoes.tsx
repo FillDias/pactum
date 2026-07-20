@@ -8,6 +8,7 @@ import {
   StatusBar,
   ScrollView,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native'
 import { useResponsive } from '../../hooks/useResponsive'
 import { Feather } from '@expo/vector-icons'
@@ -212,76 +213,80 @@ export default function Configuracoes() {
         animationType="slide"
         onRequestClose={vm.fecharModal}
       >
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.75)' }}>
-          <View style={{
-            backgroundColor: colors.bg.secondary,
-            borderTopLeftRadius: 24, borderTopRightRadius: 24,
-            padding: 24, paddingBottom: 24 + insets.bottom,
-            borderTopWidth: 1, borderColor: colors.bg.border,
-          }}>
-            <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 6 }}>
-              {vm.modalModo === 'criar_familia' ? 'Criar familia' : 'Entrar em familia'}
-            </Text>
-            <Text style={{ color: colors.text.secondary, fontSize: 13, marginBottom: 20 }}>
-              {vm.modalModo === 'criar_familia'
-                ? 'Escolha um nome para sua familia'
-                : 'Digite o codigo de 6 caracteres enviado pelo dono da familia'}
-            </Text>
-
-            {vm.modalModo === 'criar_familia' ? (
-              <TextInput
-                style={{
-                  backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
-                  borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-                  fontSize: 15, color: colors.text.primary, marginBottom: 12,
-                }}
-                placeholder="Nome da familia ex: Familia Silva"
-                placeholderTextColor={colors.text.tertiary}
-                value={vm.nomeFamilia}
-                onChangeText={vm.setNomeFamilia}
-                autoFocus
-              />
-            ) : (
-              <TextInput
-                style={{
-                  backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
-                  borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-                  fontSize: 18, fontWeight: '700', letterSpacing: 6,
-                  color: colors.text.primary, marginBottom: 12, textAlign: 'center',
-                }}
-                placeholder="ABC123"
-                placeholderTextColor={colors.text.tertiary}
-                autoCapitalize="characters"
-                maxLength={6}
-                value={vm.codigoInput}
-                onChangeText={t => vm.setCodigoInput(t.toUpperCase())}
-                autoFocus
-              />
-            )}
-
-            {vm.erro ? (
-              <Text style={{ color: colors.status.negative, fontSize: 13, marginBottom: 12 }}>{vm.erro}</Text>
-            ) : null}
-
-            <TouchableOpacity
-              style={{ backgroundColor: colors.accent.main, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
-              onPress={vm.modalModo === 'criar_familia' ? vm.handleCriarFamilia : vm.handleEntrarFamilia}
-              disabled={vm.carregando}
-            >
-              {vm.carregando ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
-                  {vm.modalModo === 'criar_familia' ? 'Criar' : 'Entrar'}
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.75)' }}>
+            <View style={{
+              backgroundColor: colors.bg.secondary,
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              borderTopWidth: 1, borderColor: colors.bg.border,
+              maxHeight: '90%',
+            }}>
+              <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 24 + insets.bottom }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 6 }}>
+                  {vm.modalModo === 'criar_familia' ? 'Criar familia' : 'Entrar em familia'}
                 </Text>
-              )}
-            </TouchableOpacity>
+                <Text style={{ color: colors.text.secondary, fontSize: 13, marginBottom: 20 }}>
+                  {vm.modalModo === 'criar_familia'
+                    ? 'Escolha um nome para sua familia'
+                    : 'Digite o codigo de 6 caracteres enviado pelo dono da familia'}
+                </Text>
 
-            <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={vm.fecharModal}>
-              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
-            </TouchableOpacity>
+                {vm.modalModo === 'criar_familia' ? (
+                  <TextInput
+                    style={{
+                      backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
+                      borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+                      fontSize: 15, color: colors.text.primary, marginBottom: 12,
+                    }}
+                    placeholder="Nome da familia ex: Familia Silva"
+                    placeholderTextColor={colors.text.tertiary}
+                    value={vm.nomeFamilia}
+                    onChangeText={vm.setNomeFamilia}
+                    autoFocus
+                  />
+                ) : (
+                  <TextInput
+                    style={{
+                      backgroundColor: colors.bg.input, borderWidth: 1, borderColor: colors.bg.border,
+                      borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+                      fontSize: 18, fontWeight: '700', letterSpacing: 6,
+                      color: colors.text.primary, marginBottom: 12, textAlign: 'center',
+                    }}
+                    placeholder="ABC123"
+                    placeholderTextColor={colors.text.tertiary}
+                    autoCapitalize="characters"
+                    maxLength={6}
+                    value={vm.codigoInput}
+                    onChangeText={t => vm.setCodigoInput(t.toUpperCase())}
+                    autoFocus
+                  />
+                )}
+
+                {vm.erro ? (
+                  <Text style={{ color: colors.status.negative, fontSize: 13, marginBottom: 12 }}>{vm.erro}</Text>
+                ) : null}
+
+                <TouchableOpacity
+                  style={{ backgroundColor: colors.accent.main, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
+                  onPress={vm.modalModo === 'criar_familia' ? vm.handleCriarFamilia : vm.handleEntrarFamilia}
+                  disabled={vm.carregando}
+                >
+                  {vm.carregando ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
+                      {vm.modalModo === 'criar_familia' ? 'Criar' : 'Entrar'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={vm.fecharModal}>
+                  <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   )
