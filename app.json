@@ -20,7 +20,7 @@
       "package": "com.filldias.pactum",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0a1628"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
