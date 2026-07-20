@@ -16,6 +16,7 @@ type CompraCartaoState = {
     dados: Partial<Pick<CompraCartao, 'descricao' | 'valor_total' | 'numero_parcelas'>>
   ) => Promise<void>
   cancelarCompraCartao: (id: string) => Promise<void>
+  excluirCompraCartao: (id: string) => Promise<void>
   limparErro: () => void
 }
 
@@ -66,6 +67,19 @@ export const useCompraCartaoStore = create<CompraCartaoState>((set) => ({
       const cancelada = await compraCartaoService.cancelarCompraCartao(id)
       set(state => ({
         comprasCartao: state.comprasCartao.map(c => c.id === id ? cancelada : c),
+        carregando: false,
+      }))
+    } catch (error: any) {
+      set({ erro: error.message, carregando: false })
+    }
+  },
+
+  excluirCompraCartao: async (id) => {
+    set({ carregando: true, erro: null })
+    try {
+      await compraCartaoService.excluirCompraCartao(id)
+      set(state => ({
+        comprasCartao: state.comprasCartao.filter(c => c.id !== id),
         carregando: false,
       }))
     } catch (error: any) {

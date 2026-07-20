@@ -21,6 +21,7 @@ const cartao = (overrides: Partial<Cartao>): Cartao => ({
   apelido: null,
   operadora: 'Inter',
   limite: null,
+  dia_vencimento: null,
   created_at: new Date().toISOString(),
   ...overrides,
 })

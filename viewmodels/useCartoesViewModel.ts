@@ -17,6 +17,8 @@ export interface CartoesViewModel {
   setOperadoraCustomizada: (v: string) => void
   limite: string
   setLimite: (v: string) => void
+  diaVencimento: string
+  setDiaVencimento: (v: string) => void
   cartoes: Cartao[]
   carregando: boolean
   buscarCartoes: () => void
@@ -31,6 +33,7 @@ export function useCartoesViewModel(): CartoesViewModel {
   const [operadoraSelecionada, setOperadoraSelecionada] = useState('')
   const [operadoraCustomizada, setOperadoraCustomizada] = useState('')
   const [limite, setLimite] = useState('')
+  const [diaVencimento, setDiaVencimento] = useState('')
 
   const { cartoes, carregando, buscarCartoes, adicionarCartao, removerCartao } = useCartaoStore()
 
@@ -39,6 +42,7 @@ export function useCartoesViewModel(): CartoesViewModel {
     setOperadoraSelecionada('')
     setOperadoraCustomizada('')
     setLimite('')
+    setDiaVencimento('')
   }
 
   const abrirModal = useCallback(() => setModalVisivel(true), [])
@@ -59,6 +63,7 @@ export function useCartoesViewModel(): CartoesViewModel {
       apelido: apelido.trim() || null,
       operadora: operadora.trim(),
       limite: limite ? parseFloat(limite.replace(',', '.')) : null,
+      dia_vencimento: diaVencimento ? parseInt(diaVencimento, 10) : null,
     })
 
     if (useCartaoStore.getState().erro) {
@@ -68,7 +73,7 @@ export function useCartoesViewModel(): CartoesViewModel {
 
     resetForm()
     setModalVisivel(false)
-  }, [apelido, operadoraSelecionada, operadoraCustomizada, limite, adicionarCartao])
+  }, [apelido, operadoraSelecionada, operadoraCustomizada, limite, diaVencimento, adicionarCartao])
 
   const handleRemover = useCallback((id: string) => {
     Alert.alert('Remover', 'Deseja remover este cartao?', [
@@ -83,6 +88,7 @@ export function useCartoesViewModel(): CartoesViewModel {
     operadoraSelecionada, setOperadoraSelecionada,
     operadoraCustomizada, setOperadoraCustomizada,
     limite, setLimite,
+    diaVencimento, setDiaVencimento,
     cartoes, carregando, buscarCartoes,
     handleSalvar, handleRemover,
     formatarMoeda,

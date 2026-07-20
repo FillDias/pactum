@@ -28,3 +28,7 @@ export const cancelarCompraCartao = async (id: string): Promise<CompraCartao> =>
   const data = await api.post(`/compras_cartao/${id}/cancelar`, {})
   return data.compra_cartao
 }
+
+export const excluirCompraCartao = async (id: string): Promise<void> => {
+  await api.delete(`/compras_cartao/${id}`)
+}

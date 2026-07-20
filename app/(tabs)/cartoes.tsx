@@ -9,8 +9,10 @@ import {
   ActivityIndicator,
   StatusBar,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
+import { Feather } from '@expo/vector-icons'
 import { useResponsive } from '../../hooks/useResponsive'
 import { colors } from '../../constants/colors'
 import { OPERADORAS_CARTAO, OPERADORA_OUTRA, PARCELAS_CARTAO } from '../../constants/categories'
@@ -120,12 +122,19 @@ export default function Cartoes() {
                   {cartao.apelido || cartao.operadora}
                 </Text>
                 <Text style={{ color: colors.text.tertiary, fontSize: 12, marginTop: 3 }}>
-                  {cartao.operadora}{cartao.limite ? ` · Limite ${comprasVm.formatarMoeda(cartao.limite)}` : ''}
+                  {cartao.operadora}
+                  {cartao.limite ? ` · Limite ${comprasVm.formatarMoeda(cartao.limite)}` : ''}
+                  {cartao.dia_vencimento ? ` · Vence dia ${cartao.dia_vencimento}` : ''}
                 </Text>
               </View>
-              <Text style={{ color: colors.status.negative, fontWeight: '700', fontSize: 15 }}>
-                {comprasVm.formatarMoeda(comprasVm.totalPorCartao[cartao.id] ?? 0)}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Text style={{ color: colors.status.negative, fontWeight: '700', fontSize: 15 }}>
+                  {comprasVm.formatarMoeda(comprasVm.totalPorCartao[cartao.id] ?? 0)}
+                </Text>
+                <TouchableOpacity onPress={() => cartoesVm.handleRemover(cartao.id)}>
+                  <Feather name="trash-2" size={16} color={colors.status.negative} />
+                </TouchableOpacity>
+              </View>
             </TouchableOpacity>
           ))
         )}
@@ -137,9 +146,8 @@ export default function Cartoes() {
           </View>
         ) : (
           comprasVm.comprasCartao.map(compra => (
-            <TouchableOpacity
+            <View
               key={compra.id}
-              onLongPress={() => !compra.cancelada_em && comprasVm.handleCancelar(compra.id)}
               style={{
                 backgroundColor: colors.bg.card, borderRadius: 14, padding: 16, marginBottom: 8,
                 flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.bg.border,
@@ -155,10 +163,22 @@ export default function Cartoes() {
                   {compra.cancelada_em ? ' · Cancelada' : ''}
                 </Text>
               </View>
-              <Text style={{ color: colors.text.primary, fontWeight: '700', fontSize: 15 }}>
-                {comprasVm.formatarMoeda(compra.valor_total)}
-              </Text>
-            </TouchableOpacity>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Text style={{ color: colors.text.primary, fontWeight: '700', fontSize: 15 }}>
+                  {comprasVm.formatarMoeda(compra.valor_total)}
+                </Text>
+                {!compra.cancelada_em && (
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TouchableOpacity onPress={() => comprasVm.handleCancelar(compra.id)}>
+                      <Feather name="slash" size={15} color={colors.text.tertiary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => comprasVm.handleExcluir(compra.id)}>
+                      <Feather name="trash-2" size={15} color={colors.status.negative} />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            </View>
           ))
         )}
 
@@ -185,84 +205,99 @@ export default function Cartoes() {
 
       {/* Modal novo cartao */}
       <Modal visible={cartoesVm.modalVisivel} transparent animationType="slide" onRequestClose={cartoesVm.fecharModal}>
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <View style={{
-            backgroundColor: colors.bg.secondary,
-            borderTopLeftRadius: 24, borderTopRightRadius: 24,
-            padding: 24, borderTopWidth: 1, borderColor: colors.bg.border,
-          }}>
-            <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
-              Novo cartao
-            </Text>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+            <View style={{
+              backgroundColor: colors.bg.secondary,
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              borderTopWidth: 1, borderColor: colors.bg.border,
+              maxHeight: '90%',
+            }}>
+              <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
+                  Novo cartao
+                </Text>
 
-            <TextInput
-              style={inputStyle}
-              placeholder="Apelido (opcional) ex: Cartao da Ana"
-              placeholderTextColor={colors.text.tertiary}
-              value={cartoesVm.apelido}
-              onChangeText={cartoesVm.setApelido}
-            />
+                <TextInput
+                  style={inputStyle}
+                  placeholder="Apelido (opcional) ex: Cartao da Ana"
+                  placeholderTextColor={colors.text.tertiary}
+                  value={cartoesVm.apelido}
+                  onChangeText={cartoesVm.setApelido}
+                />
 
-            <Text style={{ fontSize: 11, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
-              Operadora
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {[...OPERADORAS_CARTAO, OPERADORA_OUTRA].map(op => (
-                  <TouchableOpacity
-                    key={op}
-                    style={{
-                      paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-                      backgroundColor: cartoesVm.operadoraSelecionada === op ? colors.accent.main : colors.bg.input,
-                      borderWidth: 1,
-                      borderColor: cartoesVm.operadoraSelecionada === op ? colors.accent.main : colors.bg.border,
-                    }}
-                    onPress={() => cartoesVm.setOperadoraSelecionada(op)}
-                  >
-                    <Text style={{ color: cartoesVm.operadoraSelecionada === op ? colors.text.inverse : colors.text.secondary, fontSize: 13 }}>
-                      {op}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+                <Text style={{ fontSize: 11, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
+                  Operadora
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    {[...OPERADORAS_CARTAO, OPERADORA_OUTRA].map(op => (
+                      <TouchableOpacity
+                        key={op}
+                        style={{
+                          paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                          backgroundColor: cartoesVm.operadoraSelecionada === op ? colors.accent.main : colors.bg.input,
+                          borderWidth: 1,
+                          borderColor: cartoesVm.operadoraSelecionada === op ? colors.accent.main : colors.bg.border,
+                        }}
+                        onPress={() => cartoesVm.setOperadoraSelecionada(op)}
+                      >
+                        <Text style={{ color: cartoesVm.operadoraSelecionada === op ? colors.text.inverse : colors.text.secondary, fontSize: 13 }}>
+                          {op}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
 
-            {cartoesVm.operadoraSelecionada === OPERADORA_OUTRA && (
-              <TextInput
-                style={inputStyle}
-                placeholder="Nome da operadora"
-                placeholderTextColor={colors.text.tertiary}
-                value={cartoesVm.operadoraCustomizada}
-                onChangeText={cartoesVm.setOperadoraCustomizada}
-              />
-            )}
+                {cartoesVm.operadoraSelecionada === OPERADORA_OUTRA && (
+                  <TextInput
+                    style={inputStyle}
+                    placeholder="Nome da operadora"
+                    placeholderTextColor={colors.text.tertiary}
+                    value={cartoesVm.operadoraCustomizada}
+                    onChangeText={cartoesVm.setOperadoraCustomizada}
+                  />
+                )}
 
-            <TextInput
-              style={inputStyle}
-              placeholder="Limite (opcional) ex: 5000,00"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="decimal-pad"
-              value={cartoesVm.limite}
-              onChangeText={cartoesVm.setLimite}
-            />
+                <TextInput
+                  style={inputStyle}
+                  placeholder="Limite (opcional) ex: 5000,00"
+                  placeholderTextColor={colors.text.tertiary}
+                  keyboardType="decimal-pad"
+                  value={cartoesVm.limite}
+                  onChangeText={cartoesVm.setLimite}
+                />
 
-            <TouchableOpacity
-              style={{ backgroundColor: colors.accent.main, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
-              onPress={cartoesVm.handleSalvar}
-              disabled={cartoesVm.carregando}
-            >
-              {cartoesVm.carregando ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Salvar cartao</Text>
-              )}
-            </TouchableOpacity>
+                <TextInput
+                  style={inputStyle}
+                  placeholder="Dia de vencimento (opcional) ex: 10"
+                  placeholderTextColor={colors.text.tertiary}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  value={cartoesVm.diaVencimento}
+                  onChangeText={cartoesVm.setDiaVencimento}
+                />
 
-            <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={cartoesVm.fecharModal}>
-              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ backgroundColor: colors.accent.main, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
+                  onPress={cartoesVm.handleSalvar}
+                  disabled={cartoesVm.carregando}
+                >
+                  {cartoesVm.carregando ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Salvar cartao</Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={cartoesVm.fecharModal}>
+                  <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Modal nova compra parcelada */}
@@ -272,98 +307,103 @@ export default function Cartoes() {
         animationType="slide"
         onRequestClose={comprasVm.fecharModal}
       >
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-          <View style={{
-            backgroundColor: colors.bg.secondary,
-            borderTopLeftRadius: 24, borderTopRightRadius: 24,
-            padding: 24, borderTopWidth: 1, borderColor: colors.bg.border,
-          }}>
-            <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
-              Nova compra no cartao
-            </Text>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+            <View style={{
+              backgroundColor: colors.bg.secondary,
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              borderTopWidth: 1, borderColor: colors.bg.border,
+              maxHeight: '90%',
+            }}>
+              <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 20 }}>
+                  Nova compra no cartao
+                </Text>
 
-            <Text style={{ fontSize: 11, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
-              Cartao
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {cartoesVm.cartoes.map(cartao => (
-                  <TouchableOpacity
-                    key={cartao.id}
-                    style={{
-                      paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-                      backgroundColor: comprasVm.cartaoId === cartao.id ? colors.accent.main : colors.bg.input,
-                      borderWidth: 1,
-                      borderColor: comprasVm.cartaoId === cartao.id ? colors.accent.main : colors.bg.border,
-                    }}
-                    onPress={() => comprasVm.setCartaoId(cartao.id)}
-                  >
-                    <Text style={{ color: comprasVm.cartaoId === cartao.id ? colors.text.inverse : colors.text.secondary, fontSize: 13 }}>
-                      {cartao.apelido || cartao.operadora}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+                <Text style={{ fontSize: 11, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
+                  Cartao
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    {cartoesVm.cartoes.map(cartao => (
+                      <TouchableOpacity
+                        key={cartao.id}
+                        style={{
+                          paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                          backgroundColor: comprasVm.cartaoId === cartao.id ? colors.accent.main : colors.bg.input,
+                          borderWidth: 1,
+                          borderColor: comprasVm.cartaoId === cartao.id ? colors.accent.main : colors.bg.border,
+                        }}
+                        onPress={() => comprasVm.setCartaoId(cartao.id)}
+                      >
+                        <Text style={{ color: comprasVm.cartaoId === cartao.id ? colors.text.inverse : colors.text.secondary, fontSize: 13 }}>
+                          {cartao.apelido || cartao.operadora}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
 
-            <TextInput
-              style={inputStyle}
-              placeholder="Descricao ex: Notebook"
-              placeholderTextColor={colors.text.tertiary}
-              value={comprasVm.descricao}
-              onChangeText={comprasVm.setDescricao}
-            />
+                <TextInput
+                  style={inputStyle}
+                  placeholder="Descricao ex: Notebook"
+                  placeholderTextColor={colors.text.tertiary}
+                  value={comprasVm.descricao}
+                  onChangeText={comprasVm.setDescricao}
+                />
 
-            <TextInput
-              style={inputStyle}
-              placeholder="Valor total ex: 3000,00"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="decimal-pad"
-              value={comprasVm.valor}
-              onChangeText={comprasVm.setValor}
-            />
+                <TextInput
+                  style={inputStyle}
+                  placeholder="Valor total ex: 3000,00"
+                  placeholderTextColor={colors.text.tertiary}
+                  keyboardType="decimal-pad"
+                  value={comprasVm.valor}
+                  onChangeText={comprasVm.setValor}
+                />
 
-            <Text style={{ fontSize: 11, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
-              Parcelas: {comprasVm.numeroParcelas}x
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {PARCELAS_CARTAO.filter(n => [1, 2, 3, 6, 10, 12, 18, 24, 36, 48].includes(n)).map(n => (
-                  <TouchableOpacity
-                    key={n}
-                    style={{
-                      paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-                      backgroundColor: comprasVm.numeroParcelas === n ? colors.accent.main : colors.bg.input,
-                      borderWidth: 1,
-                      borderColor: comprasVm.numeroParcelas === n ? colors.accent.main : colors.bg.border,
-                    }}
-                    onPress={() => comprasVm.setNumeroParcelas(n)}
-                  >
-                    <Text style={{ color: comprasVm.numeroParcelas === n ? colors.text.inverse : colors.text.secondary, fontSize: 13 }}>
-                      {n}x
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+                <Text style={{ fontSize: 11, color: colors.text.tertiary, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
+                  Parcelas: {comprasVm.numeroParcelas}x
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    {PARCELAS_CARTAO.filter(n => [1, 2, 3, 4, 5, 6, 10, 12, 18, 24, 36, 48].includes(n)).map(n => (
+                      <TouchableOpacity
+                        key={n}
+                        style={{
+                          paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                          backgroundColor: comprasVm.numeroParcelas === n ? colors.accent.main : colors.bg.input,
+                          borderWidth: 1,
+                          borderColor: comprasVm.numeroParcelas === n ? colors.accent.main : colors.bg.border,
+                        }}
+                        onPress={() => comprasVm.setNumeroParcelas(n)}
+                      >
+                        <Text style={{ color: comprasVm.numeroParcelas === n ? colors.text.inverse : colors.text.secondary, fontSize: 13 }}>
+                          {n}x
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
 
-            <TouchableOpacity
-              style={{ backgroundColor: colors.accent.main, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
-              onPress={comprasVm.handleSalvar}
-              disabled={comprasVm.carregando}
-            >
-              {comprasVm.carregando ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Salvar compra</Text>
-              )}
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ backgroundColor: colors.accent.main, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
+                  onPress={comprasVm.handleSalvar}
+                  disabled={comprasVm.carregando}
+                >
+                  {comprasVm.carregando ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Salvar compra</Text>
+                  )}
+                </TouchableOpacity>
 
-            <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={comprasVm.fecharModal}>
-              <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
-            </TouchableOpacity>
+                <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={comprasVm.fecharModal}>
+                  <Text style={{ color: colors.text.tertiary, fontSize: 14 }}>Cancelar</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   )

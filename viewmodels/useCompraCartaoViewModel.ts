@@ -35,6 +35,7 @@ export interface CompraCartaoViewModel {
   buscarDados: () => void
   handleSalvar: () => Promise<void>
   handleCancelar: (id: string) => void
+  handleExcluir: (id: string) => void
   formatarMoeda: typeof formatarMoeda
 }
 
@@ -50,7 +51,7 @@ export function useCompraCartaoViewModel(): CompraCartaoViewModel {
   const [anoReferencia, setAnoReferencia] = useState(anoSelecionado)
   const { buscarSaldo } = useSaldoStore()
   const { cartoes, comprometidoFuturo, buscarCartoes, buscarComprometidoFuturo } = useCartaoStore()
-  const { comprasCartao, carregando, buscarComprasCartao, adicionarCompraCartao, cancelarCompraCartao } = useCompraCartaoStore()
+  const { comprasCartao, carregando, buscarComprasCartao, adicionarCompraCartao, cancelarCompraCartao, excluirCompraCartao } = useCompraCartaoStore()
 
   const parcelasDoMes = useMemo(
     () => lancamentos.filter(l => l.tipo === 'despesa' && l.categoria === 'Cartao'),
@@ -134,6 +135,17 @@ export function useCompraCartaoViewModel(): CompraCartaoViewModel {
     )
   }, [cancelarCompraCartao])
 
+  const handleExcluir = useCallback((id: string) => {
+    Alert.alert(
+      'Excluir compra',
+      'Isso remove a compra e todas as parcelas lancadas. Nao da para desfazer.',
+      [
+        { text: 'Voltar', style: 'cancel' },
+        { text: 'Excluir', style: 'destructive', onPress: () => excluirCompraCartao(id) },
+      ]
+    )
+  }, [excluirCompraCartao])
+
   return {
     modalVisivel, abrirModal, fecharModal,
     cartaoId, setCartaoId,
@@ -146,7 +158,7 @@ export function useCompraCartaoViewModel(): CompraCartaoViewModel {
     totalPorCartao, totalGeralNoMes, comprometidoFuturo,
     carregando, mesSelecionado, anoSelecionado,
     buscarDados,
-    handleSalvar, handleCancelar,
+    handleSalvar, handleCancelar, handleExcluir,
     formatarMoeda,
   }
 }

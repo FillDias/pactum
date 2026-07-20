@@ -49,6 +49,7 @@ export type Cartao = {
   apelido: string | null
   operadora: string
   limite: number | null
+  dia_vencimento: number | null
   created_at: string
 }
 
